@@ -4,7 +4,7 @@ import User from './models/user';
 import { PassportStatic } from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions } from 'passport-jwt';
 
-const keyPath = path.join(__dirname, 'cert', 'public.pem');
+const keyPath = path.join(process.cwd(), 'cert', 'public.pem');
 const PUB_KEY = fs.readFileSync(keyPath, 'utf-8');
 
 // TODO

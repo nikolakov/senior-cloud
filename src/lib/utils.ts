@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { IUser } from '../types/auth';
 
-const keyPath = path.join(__dirname, '..', 'cert', 'private.pem');
+const keyPath = path.join(process.cwd(), 'cert', 'private.pem');
 const PRIVATE_KEY = fs.readFileSync(keyPath, 'utf-8');
 
 /**
