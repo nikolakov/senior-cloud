@@ -34,7 +34,11 @@ const Dashboard: React.FC = () => {
     <div style={{ padding: '2rem 0' }}>
       <UploadInput onSuccess={fetchFiles} />
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
-        {loading ? <Spinner animation="border" /> : <FilesTable files={files} />}
+        {loading ? (
+          <Spinner animation="border" />
+        ) : (
+          <FilesTable files={files} onChange={fetchFiles} />
+        )}
       </div>
     </div>
   );

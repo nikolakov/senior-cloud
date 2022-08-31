@@ -69,6 +69,7 @@ const FilesService = {
     }
   },
   getFiles: () => ApiService.get<FileFromApi[]>(`${endpoint}`),
+  delete: (fileId: string) => ApiService.delete(`${endpoint}/${fileId}`),
 };
 
 export default FilesService;

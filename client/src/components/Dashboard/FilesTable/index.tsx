@@ -6,6 +6,7 @@ import MoreOptionsDropdown from './MoreOptionsDropdown';
 import useAuth from 'hooks/useAuth';
 
 import classes from './styles.module.css';
+import FilesService from 'services/FilesService';
 
 // ToDo:
 // EVERYTHING in this file requires a lot of rework and optimization
@@ -35,6 +36,7 @@ const icons: { [key: string]: React.ReactNode } = {
 
 type RowProps = {
   file: FileFromApi;
+  onChange: () => any;
 };
 
 const TableHeader: React.FC = () => {
@@ -48,8 +50,17 @@ const TableHeader: React.FC = () => {
   );
 };
 
-const FileRow: React.FC<RowProps> = ({ file }) => {
+const FileRow: React.FC<RowProps> = ({ file, onChange }) => {
   const { profileInfo } = useAuth();
+
+  const deleteFileHandler = async (fileId: string) => {
+    try {
+      await FilesService.delete(fileId);
+      onChange();
+    } catch (e: any) {
+      console.log(e.message);
+    }
+  };
 
   const ext = file.name.split('.').pop() || '';
 
@@ -72,7 +83,7 @@ const FileRow: React.FC<RowProps> = ({ file }) => {
         {/* <button className={classes.MoreOptionsButton}>
           <i className="bi bi-three-dots" />
         </button> */}
-        <MoreOptionsDropdown />
+        <MoreOptionsDropdown fileId={file._id} onDelete={deleteFileHandler} />
       </div>
     </div>
   );
@@ -80,15 +91,16 @@ const FileRow: React.FC<RowProps> = ({ file }) => {
 
 type Props = {
   files: FileFromApi[];
+  onChange: () => any;
 };
 
-const FilesTable: React.FC<Props> = ({ files }) => {
+const FilesTable: React.FC<Props> = ({ files, onChange }) => {
   return (
     <div style={{ width: '100%' }}>
       <TableHeader />
       <div className={classes.FilesTable}>
         {files.map(file => (
-          <FileRow key={file._id} file={file} />
+          <FileRow key={file._id} file={file} onChange={onChange} />
         ))}
       </div>
     </div>

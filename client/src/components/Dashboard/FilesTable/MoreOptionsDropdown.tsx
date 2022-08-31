@@ -12,12 +12,17 @@ const CustomToggle = React.forwardRef<
   </button>
 ));
 
-const MoreOptionsDropdown: React.FC = () => {
+type Props = {
+  fileId: string;
+  onDelete: (fileId: string) => any;
+};
+
+const MoreOptionsDropdown: React.FC<Props> = ({ fileId, onDelete }) => {
   return (
     <Dropdown align="end">
       <Dropdown.Toggle as={CustomToggle} id="more-options-dropdown" />
       <Dropdown.Menu>
-        <Dropdown.Item>Delete</Dropdown.Item>
+        <Dropdown.Item onClick={() => onDelete(fileId)}>Delete</Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
   );

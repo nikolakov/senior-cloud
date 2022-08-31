@@ -103,4 +103,28 @@ router.get('/:userId/:fileId/download', async (req, res) => {
   res.download(path, file.name);
 });
 
+router.delete('/:fileId', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  try {
+    const { fileId } = req.params;
+
+    const file = await File.findOne({ _id: fileId, owner: req.user?._id });
+
+    if (file) {
+      const path = `${process.cwd()}/uploads/${fileId}`;
+
+      console.log(`deleting ${file.name}...`);
+
+      fs.unlink(path, () => {
+        console.log(`file ${file.name} deleted`);
+      });
+
+      await file.delete();
+    }
+  } catch (e: any) {
+    console.log(e.message);
+  }
+
+  res.send(204);
+});
+
 export default router;
