@@ -1,0 +1,15 @@
+// environment variables
+.env
+
+// dependencies
+node_modules
+
+// builds
+dist
+build
+
+// rsa keys
+cert
+
+// uploaded files
+uploads

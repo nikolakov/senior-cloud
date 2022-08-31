@@ -1,0 +1,65 @@
+.TableHeader {
+  display: flex;
+}
+
+.TableHeader > .IconContainer {
+  width: 3.625rem;
+  display: flex;
+  justify-content: center;
+}
+
+.TableHeader > * {
+  padding: 0.5rem;
+}
+
+.TableRow {
+  display: flex;
+  border-top: 1px solid #999;
+}
+
+.TableRow:last-child {
+  border-bottom: 1px solid #999;
+}
+
+.TableRow:nth-child(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.TableRow > * {
+  padding: 0.5rem;
+}
+
+.IconContainer,
+.NameContainer,
+.DownloadContainer,
+.MoreOptionsContainer {
+  display: flex;
+  align-items: center;
+}
+
+.IconContainer,
+.MoreOptionsContainer {
+  font-size: 1.5rem;
+}
+
+.IconContainer {
+  padding: 0.5rem 1rem;
+}
+
+.NameContainer {
+  flex-grow: 2;
+  overflow: hidden;
+}
+
+.NameContainer > div {
+  overflow: hidden;
+  white-space: nowrap;
+  display: inline-block;
+  text-overflow: ellipsis;
+}
+
+.MoreOptionsButton {
+  background: none;
+  border: none;
+  margin: 0;
+}
