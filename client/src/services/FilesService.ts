@@ -5,7 +5,7 @@ import { createQueryParams } from './utils';
 const endpoint = '/files';
 
 const FilesService = {
-  uploadFile: async (
+  upload: async (
     files: FileList,
     onProgress: (progress: number, filesUploaded: number) => void,
     onFileUpload: () => void

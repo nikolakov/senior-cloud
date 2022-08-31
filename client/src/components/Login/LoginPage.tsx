@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
   return (
     <Row className="justify-content-center" style={{ marginTop: '2rem' }}>
       <Col xs={12} sm={10} md={8} lg={6}>
-        <Card title="Sign in" buttonText="Sign up" buttonHref="/register">
+        <Card title="Sign in" buttonText="Register" buttonHref="/register">
           <LoginForm />
         </Card>
       </Col>

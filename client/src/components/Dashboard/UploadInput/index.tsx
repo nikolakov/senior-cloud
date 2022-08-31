@@ -40,7 +40,7 @@ const UploadInput: React.FC<Props> = ({ onSuccess }) => {
       try {
         setProgress(1);
 
-        await FilesService.uploadFile(
+        await FilesService.upload(
           filesSelected,
           (progress, filesUploaded) => {
             setProgress(progress);

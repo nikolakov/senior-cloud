@@ -23,7 +23,7 @@ const RegisterPage: React.FC = () => {
   return (
     <Row className="justify-content-center" style={{ marginTop: '2rem' }}>
       <Col xs={12} sm={10} md={8} lg={6}>
-        <Card title="Sign up" buttonText="Sign in" buttonHref="/login">
+        <Card title="Register" buttonText="Sign in" buttonHref="/login">
           <RegisterForm />
         </Card>
       </Col>

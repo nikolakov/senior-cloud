@@ -45,7 +45,12 @@ const Navbar: React.FC = () => {
                 >
                   <NavDropdown.ItemText>{profileInfo.username}</NavDropdown.ItemText>
                   <NavDropdown.Divider />
-                  <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
+                  <NavDropdown.Item
+                    style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}
+                    onClick={logout}
+                  >
+                    Logout <i className="bi bi-box-arrow-right"></i>
+                  </NavDropdown.Item>
                 </NavDropdown>
               </>
             ) : (
