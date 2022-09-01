@@ -11,10 +11,10 @@ import { isAxiosError } from 'types';
 import FilesService from 'services/FilesService';
 
 type Props = {
-  onSuccess: () => void;
+  onFileUpload: () => void;
 };
 
-const UploadInput: React.FC<Props> = ({ onSuccess }) => {
+const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
   const [filesSelected, setFilesSelected] = useState<FileList | null>(null);
   const [progress, setProgress] = useState<number>();
   const [uploadError, setUploadError] = useState('');
@@ -46,9 +46,8 @@ const UploadInput: React.FC<Props> = ({ onSuccess }) => {
             setProgress(progress);
             setFilesUploaded(filesUploaded);
           },
-          onSuccess
+          onFileUpload
         );
-        // onSuccess();
         setProgress(101);
       } catch (e: any) {
         handleError(e);

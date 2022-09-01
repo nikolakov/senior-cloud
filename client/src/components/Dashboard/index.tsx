@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div style={{ padding: '2rem 0' }}>
-      <UploadInput onSuccess={fetchFiles} />
+      <UploadInput onFileUpload={fetchFiles} />
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
         {loading ? (
           <Spinner animation="border" />
