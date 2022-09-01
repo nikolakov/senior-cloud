@@ -2,6 +2,7 @@ import { Router } from 'express';
 import passport from 'passport';
 
 import files from './files';
+import users from './users';
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.get('/profileInfo', passport.authenticate('jwt', { session: false }), (re
 });
 
 router.use('/files', files);
+router.use('/users', users);
 
 export default router;

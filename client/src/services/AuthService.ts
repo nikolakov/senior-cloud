@@ -190,8 +190,8 @@ const AuthService = {
 
   getProfileInfo: () => axiosApiInstance.get<UserProfile>('/profileInfo'),
 
-  updateProfileInfo: (newProfileInfo: EditableUserProfile) =>
-    axiosApiInstance.patch<UserProfile>('/users/profile', newProfileInfo),
+  updateProfileInfo: (userId: string, newProfileInfo: EditableUserProfile) =>
+    axiosApiInstance.patch<UserProfile>(`/users/${userId}`, newProfileInfo),
 
   logout: () => {
     // console.error('[logout] logging out...');

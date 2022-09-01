@@ -23,6 +23,7 @@ const TextInput: React.FC<Props> = ({
   xl,
   xxl,
   type,
+  autoComplete,
   ...props
 }) => {
   return (
@@ -34,7 +35,12 @@ const TextInput: React.FC<Props> = ({
               {label}
               {required ? <RequiredStar /> : null}
             </Form.Label>
-            <Form.Control type={type} {...field} isInvalid={meta.touched && !!meta.error} />
+            <Form.Control
+              type={type}
+              {...field}
+              isInvalid={meta.touched && !!meta.error}
+              autoComplete={autoComplete}
+            />
             <Form.Text className="text-danger">{meta.touched && meta.error}</Form.Text>
           </Form.Group>
         )}

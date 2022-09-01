@@ -5,9 +5,11 @@ export enum Role {
   User = 'user',
 }
 
-export interface IUser extends Document {
+export interface User {
   username: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   hash: string;
   salt: string;
   createdAt: number;
@@ -15,3 +17,10 @@ export interface IUser extends Document {
   deletedAt?: number;
   role: Role;
 }
+
+export interface IUser extends Document, User {}
+
+export type UpdateUserApi = Omit<
+  User,
+  'hash' | 'salt' | 'createdAt' | 'modifiedAt' | 'deletedAt' | 'role'
+>;

@@ -1,5 +1,5 @@
 import User from '../models/user';
-import { Role } from '../types/auth';
+import { Role } from '../types/user';
 import * as utils from './utils';
 
 const createInitialUser = async () => {
@@ -12,6 +12,7 @@ const createInitialUser = async () => {
 
   const username = process.env.INITIAL_USER_USERNAME;
   const password = process.env.INITIAL_USER_PASSWORD;
+  const email = process.env.INITIAL_USER_EMAIL;
 
   const user = await User.findOne({ username });
 
@@ -23,6 +24,7 @@ const createInitialUser = async () => {
 
     const newUser = new User({
       username,
+      email,
       hash,
       salt,
       createdAt: Date.now(),

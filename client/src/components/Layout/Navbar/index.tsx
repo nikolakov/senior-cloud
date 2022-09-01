@@ -5,7 +5,7 @@ import Nav from 'react-bootstrap/Nav';
 import Button from 'react-bootstrap/Button';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 import { AuthContext } from 'contexts/auth-context';
 
@@ -21,13 +21,13 @@ const Navbar: React.FC = () => {
         <BSNavbar.Toggle aria-controls="responsive-navbar-nav" />
         <BSNavbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
-            {/* {isLoggedIn ? (
-              <NavLink to="/dashboard" style={{ textDecoration: 'none' }}>
+            {isLoggedIn ? (
+              <NavLink to="/" style={{ textDecoration: 'none' }}>
                 {({ isActive }) => (
-                  <span className={`nav-link${isActive ? ' active' : ''}`}>Dashboard</span>
+                  <span className={`nav-link${isActive ? ' active' : ''}`}>Home</span>
                 )}
               </NavLink>
-            ) : null} */}
+            ) : null}
           </Nav>
           <Nav>
             {isLoggedIn ? (
@@ -45,7 +45,11 @@ const Navbar: React.FC = () => {
                 >
                   <NavDropdown.ItemText>{profileInfo.username}</NavDropdown.ItemText>
                   <NavDropdown.Divider />
+                  <NavDropdown.Item as={Link} to="/account">
+                    Settings
+                  </NavDropdown.Item>
                   <NavDropdown.Item
+                    as="button"
                     style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}
                     onClick={logout}
                   >

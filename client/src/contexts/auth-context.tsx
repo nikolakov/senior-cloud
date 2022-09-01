@@ -3,14 +3,14 @@ import React, { useCallback, useState, useEffect } from 'react';
 
 import AuthService from '../services/AuthService';
 import axiosApiInstance from 'services/ApiService';
-import { UserProfile } from '../types';
+import { UserProfile, EditableUserProfile } from '../types';
 
 export type AuthContextType = {
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
   token: string | null;
   profileInfo: UserProfile;
-  updateProfileInfo: (profileInfo: UserProfile) => Promise<void>;
+  updateProfileInfo: (profileInfo: EditableUserProfile) => Promise<void>;
   loading: boolean;
   isLoggedIn: boolean;
   logout: () => void;
@@ -94,10 +94,11 @@ export const AuthContextProvider = ({ children }: any) => {
 
   const isLoggedIn = !!(token && profileInfo);
 
-  const updateProfileInfo = async (profileInfo: UserProfile) => {
-    const { _id, ...rest } = profileInfo;
-
-    const res = await AuthService.updateProfileInfo(rest);
+  const updateProfileInfo = async (newProfileInfo: EditableUserProfile) => {
+    const res = await AuthService.updateProfileInfo(
+      (profileInfo as UserProfile)._id,
+      newProfileInfo
+    );
 
     setProfileInfo(res.data);
   };

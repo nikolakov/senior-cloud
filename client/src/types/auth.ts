@@ -9,7 +9,10 @@ export type LoginResponse = {
 
 export type UserProfile = {
   _id: string;
+  firstName?: string;
+  lastName?: string;
   username: string;
+  email: string;
 };
 
 export type EditableUserProfile = Omit<UserProfile, '_id'>;

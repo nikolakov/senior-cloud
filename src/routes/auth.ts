@@ -5,7 +5,6 @@ import * as utils from '../lib/utils';
 
 const router = Router();
 
-// TODO
 router.post('/login', async (req, res, next) => {
   try {
     const user = await User.findOne({ username: req.body.username });
@@ -28,7 +27,6 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-// TODO
 router.post('/register', async (req, res, next) => {
   try {
     const { username, email, password } = req.body;

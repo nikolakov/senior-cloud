@@ -8,6 +8,7 @@ import LoginPage from 'components/Login/LoginPage';
 import RegisterPage from 'components/Login/RegisterPage';
 import Dashboard from 'components/Dashboard';
 import Page404 from 'components/Layout/Page404';
+import AccountSettings from 'components/AccountSettings/AccountSettings';
 
 type RequireAuthProps = {
   children?: React.ReactNode;
@@ -37,6 +38,14 @@ const Router: React.FC = () => (
         element={
           <RequireAuth>
             <Dashboard />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <RequireAuth>
+            <AccountSettings />
           </RequireAuth>
         }
       />

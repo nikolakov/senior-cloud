@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import jsonwebtoken from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
-import { IUser } from '../types/auth';
+import { IUser } from '../types/user';
 
 const keyPath = path.join(process.cwd(), 'cert', 'private.pem');
 const PRIVATE_KEY = fs.readFileSync(keyPath, 'utf-8');
