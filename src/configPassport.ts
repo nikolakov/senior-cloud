@@ -28,6 +28,8 @@ const strategy = new JwtStrategy(options, async (payload, done) => {
   }
 });
 
-export default (passport: PassportStatic) => {
+const configPassport = (passport: PassportStatic) => {
   passport.use(strategy);
 };
+
+export default configPassport;

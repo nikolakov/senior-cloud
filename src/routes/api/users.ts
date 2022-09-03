@@ -2,11 +2,11 @@ import { Router } from 'express';
 import passport from 'passport';
 
 import User from '../../models/user';
-import { IUser, UpdateUserApi } from '../../types/user';
+import { UpdateUserRequestDTO } from '../../types/user';
 
 const router = Router();
 
-router.patch<{ userId: string }, any, UpdateUserApi>(
+router.patch<{ userId: string }, any, UpdateUserRequestDTO>(
   '/:userId',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {

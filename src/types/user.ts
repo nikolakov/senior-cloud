@@ -20,7 +20,7 @@ export interface User {
 
 export interface IUser extends Document, User {}
 
-export type UpdateUserApi = Omit<
+export type UpdateUserRequestDTO = Omit<
   User,
   'hash' | 'salt' | 'createdAt' | 'modifiedAt' | 'deletedAt' | 'role'
 >;

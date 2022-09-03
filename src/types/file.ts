@@ -1,5 +1,5 @@
 import { Document, Types } from 'mongoose';
-import { errorApiResponse } from './common';
+import { ErrorResponseDTO } from './common';
 
 export interface IFile extends Document {
   name: string;
@@ -22,9 +22,9 @@ export interface IUploadJob extends Document {
   deletedAt?: number;
 }
 
-export type CreateJobApi = {
+export type CreateJobRequestDTO = {
   fileName: string;
   fileSize: number;
 };
 
-export type CreateJobApiResponse = { jobId: string; chunkSize: number } | errorApiResponse;
+export type CreateJobResponseDTO = { jobId: string; chunkSize: number } | ErrorResponseDTO;

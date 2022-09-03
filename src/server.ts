@@ -5,7 +5,7 @@ import path from 'path';
 import passport from 'passport';
 
 import config from './config';
-import configPassport from './passport';
+import configPassport from './configPassport';
 import routes from './routes';
 import { isAddressInfo } from './types/custom';
 import createInitialUser from './lib/createInitialUser';

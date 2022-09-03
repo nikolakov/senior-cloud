@@ -6,12 +6,12 @@ import mongoose from 'mongoose';
 
 import UploadJob from '../../models/uploadJob';
 import File from '../../models/file';
-import { CreateJobApi, CreateJobApiResponse } from '../../types/file';
+import { CreateJobRequestDTO, CreateJobResponseDTO } from '../../types/file';
 import config from '../../config';
 
 const router = Router();
 
-router.post<{}, CreateJobApiResponse, CreateJobApi>(
+router.post<{}, CreateJobResponseDTO, CreateJobRequestDTO>(
   '/createUploadJob',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {

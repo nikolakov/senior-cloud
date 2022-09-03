@@ -6,7 +6,8 @@
     "outDir": "./dist",
     "esModuleInterop": true,
     "strict": true,
-    "typeRoots": ["./src/types"]
+    "typeRoots": ["./src/types"],
+    "baseUrl": "src"
   },
   "exclude": ["client"]
 }

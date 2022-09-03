@@ -2,10 +2,11 @@ import { Router } from 'express';
 
 import User from '../models/user';
 import * as utils from '../lib/utils';
+import { LoginRequestDTO, AuthResponseDTO, RegisterRequestDTO } from 'types/auth';
 
 const router = Router();
 
-router.post('/login', async (req, res, next) => {
+router.post<{}, AuthResponseDTO, LoginRequestDTO>('/login', async (req, res, next) => {
   try {
     const user = await User.findOne({ username: req.body.username });
 
@@ -27,7 +28,7 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-router.post('/register', async (req, res, next) => {
+router.post<{}, AuthResponseDTO, RegisterRequestDTO>('/register', async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
     const { salt, hash } = await utils.genPassword(password);

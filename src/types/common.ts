@@ -1,6 +1,6 @@
 // ToDo:
 // think of a better name for this file
 
-export type errorApiResponse = {
+export type ErrorResponseDTO = {
   error: string;
 };
