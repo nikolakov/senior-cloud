@@ -1,30 +1,10 @@
-import { FileFromApi, JobFromApi } from 'types';
+import { FileFromApi, JobFromApi, TempJWTResponseDTO } from 'types';
 import ApiService from './ApiService';
 import { createQueryParams } from './utils';
 
 const endpoint = '/files';
 
 const FilesService = {
-  async upload(
-    files: FileList,
-    onProgress: (progress: number, filesUploaded: number) => void,
-    onFileUpload: () => void
-  ) {
-    let filesUploaded = 0;
-
-    for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
-      const file = files[fileIndex];
-      // eslint-disable-next-line no-loop-func
-      await this.uploadFile(file, fileProgress => {
-        onProgress(
-          Math.ceil(1 + ((filesUploaded + fileProgress) / files.length) * 100),
-          filesUploaded
-        );
-      });
-      onFileUpload();
-      filesUploaded += 1;
-    }
-  },
   async createUploadJob(fileName: string, fileSize: number) {
     const res = await ApiService.post<JobFromApi>(`${endpoint}/createUploadJob`, {
       fileName,
@@ -76,6 +56,20 @@ const FilesService = {
     });
   },
   getFiles: () => ApiService.get<FileFromApi[]>(`${endpoint}`),
+  getTempJWT() {
+    return ApiService.get<TempJWTResponseDTO>(`${endpoint}/tempJWT`);
+  },
+  async download(userId: string, fileId: string) {
+    const res = await this.getTempJWT();
+
+    const link = document.createElement('a');
+    document.body.appendChild(link);
+    link.href = `/api/${endpoint}/${userId}/${fileId}/download${createQueryParams({
+      token: res.data.token,
+    })}`;
+    link.setAttribute('type', 'hidden');
+    link.click();
+  },
   delete: (fileId: string) => ApiService.delete(`${endpoint}/${fileId}`),
 };
 

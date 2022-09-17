@@ -7,7 +7,6 @@ import UploadingModal from './UploadingModal';
 
 import classes from './styles.module.css';
 import handleError from 'utils/handleError';
-import { isAxiosError } from 'types';
 import FilesService from 'services/FilesService';
 
 type Props = {
@@ -15,7 +14,7 @@ type Props = {
 };
 
 const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
-  const [filesSelected, setFilesSelected] = useState<FileList | null>(null);
+  const [files, setFiles] = useState<FileList | null>(null);
   const [progress, setProgress] = useState<number>();
   const [uploadError, setUploadError] = useState('');
   const [filesUploaded, setFilesUploaded] = useState(0);
@@ -29,33 +28,34 @@ const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
   }, []);
 
   const filesChangedHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilesSelected(e.target.files);
+    setFiles(e.target.files);
     console.log(e.target.files);
   };
 
-  const hasFiles = !!(filesSelected && filesSelected.length > 0);
+  const hasFiles = !!(files && files.length > 0);
 
   const uploadHandler = async () => {
-    if (filesSelected) {
+    if (files) {
       try {
         setProgress(1);
+        let count = 0;
 
-        await FilesService.upload(
-          filesSelected,
-          (progress, filesUploaded) => {
-            setProgress(progress);
-            setFilesUploaded(filesUploaded);
-          },
-          onFileUpload
-        );
+        for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+          const file = files[fileIndex];
+          // eslint-disable-next-line no-loop-func
+          await FilesService.uploadFile(file, fileProgress => {
+            setProgress(Math.ceil(1 + ((count + fileProgress) / files.length) * 100));
+            setFilesUploaded(count);
+          });
+
+          onFileUpload();
+          count += 1;
+        }
+
         setProgress(101);
       } catch (e: any) {
-        handleError(e);
-        if (isAxiosError(e) && e.response?.data.error) {
-          setUploadError(e.response.data.error);
-        } else {
-          setUploadError(e.message);
-        }
+        setUploadError(handleError(e));
+
         setProgress(101);
       }
     }
@@ -92,11 +92,9 @@ const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
       </Row>
       <UploadingModal
         show={hasFiles}
-        onClose={() => {
-          setFilesSelected(null);
-        }}
+        onClose={() => setFiles(null)}
         onExited={clearStateHandler}
-        files={filesSelected}
+        files={files}
         onSubmit={uploadHandler}
         progress={progress}
         filesUploaded={filesUploaded}

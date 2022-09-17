@@ -2,11 +2,15 @@ import { isAxiosError } from 'types';
 
 const handleError = (e: any) => {
   // here you can handle all common types of errors
-  if (isAxiosError(e)) {
+  let message = e.message as string;
+
+  if (isAxiosError(e) && e.response?.data.error) {
+    message = e.response.data.error;
     console.log({ ...e });
-  } else {
-    console.log(e.message);
   }
+
+  console.log(message);
+  return message;
 };
 
 export default handleError;

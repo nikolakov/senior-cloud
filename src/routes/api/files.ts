@@ -6,8 +6,10 @@ import mongoose from 'mongoose';
 
 import UploadJob from '../../models/uploadJob';
 import File from '../../models/file';
-import { CreateJobRequestDTO, CreateJobResponseDTO } from '../../types/file';
+import { CreateJobRequestDTO, CreateJobResponseDTO, TempJWTResponseDTO } from 'types/file';
 import config from '../../config';
+import * as utils from '../../lib/utils';
+import JWTDownloadVerifier from '../../middlewares/JWTDownloadVerifier';
 
 const router = Router();
 
@@ -43,18 +45,14 @@ router.post<{}, CreateJobResponseDTO, CreateJobRequestDTO>(
 router.post('/upload', passport.authenticate('jwt', { session: false }), async (req, res) => {
   const { jobId } = req.query;
 
-  // if (req.body! instanceof Buffer) {
-  //   throw new Error('Request body is not a buffer');
-  // }
-
   if (!jobId) {
-    throw new Error('missing job id');
+    return res.status(400).send({ error: 'missing_job_id' });
   }
 
   const job = await UploadJob.findOne({ _id: jobId });
 
   if (!job) {
-    throw new Error('job not found');
+    return res.status(400).send({ error: 'job_not_found' });
   }
 
   const uploadDir = `${process.cwd()}/uploads`;
@@ -90,7 +88,23 @@ router.get('/', passport.authenticate('jwt', { session: false }), async (req, re
   res.send(files);
 });
 
-router.get('/:userId/:fileId/download', async (req, res) => {
+router.get<{}, TempJWTResponseDTO, {}>(
+  '/tempJWT',
+  passport.authenticate('jwt', { session: false }),
+  (req, res, next) => {
+    try {
+      if (req.user) {
+        const { token } = utils.issueJWT(req.user, '3s');
+
+        res.send({ token });
+      }
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+router.get('/:userId/:fileId/download', JWTDownloadVerifier, async (req, res) => {
   const { fileId, userId } = req.params;
   const file = await File.findOne({ _id: fileId, owner: userId });
 
@@ -124,7 +138,7 @@ router.delete('/:fileId', passport.authenticate('jwt', { session: false }), asyn
     console.log(e.message);
   }
 
-  res.send(204);
+  res.status(204).end();
 });
 
 export default router;

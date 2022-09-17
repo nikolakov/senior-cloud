@@ -2,10 +2,14 @@ import crypto from 'crypto';
 import jsonwebtoken from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
+
 import { IUser } from '../types/user';
 
 const keyPath = path.join(process.cwd(), 'cert', 'private.pem');
 const PRIVATE_KEY = fs.readFileSync(keyPath, 'utf-8');
+
+const pubKeyPath = path.join(process.cwd(), 'cert', 'public.pem');
+const PUB_KEY = fs.readFileSync(pubKeyPath, 'utf-8');
 
 /**
  * -------------- HELPER FUNCTIONS ----------------
@@ -60,15 +64,14 @@ export const genPassword = (password: string) => {
 
 /**
  * @param user - The user object.  We need this to set the JWT `sub` payload property to the MongoDB user ID
+ * @param expiresIn - `Optional` The expiration period of the token in string format, e.g. 2s, 4h or 1d. Defaults to 1d
  */
-export const issueJWT = (user: IUser) => {
+export const issueJWT = (user: IUser, expiresIn: string = '1d') => {
   const _id = user._id;
-
-  const expiresIn = '1d';
 
   const payload = {
     sub: _id,
-    iat: Date.now(),
+    iat: Date.now() / 1000,
   };
 
   const signedToken = jsonwebtoken.sign(payload, PRIVATE_KEY, {
@@ -81,3 +84,5 @@ export const issueJWT = (user: IUser) => {
     expiresIn: expiresIn,
   };
 };
+
+export const verifyJWT = (token: string) => jsonwebtoken.verify(token, PUB_KEY);

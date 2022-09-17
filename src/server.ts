@@ -25,7 +25,8 @@ if (config.database) {
 }
 
 // Standard express middlewares
-app.use(express.json()).use(express.raw());
+app.use(express.json());
+app.use(express.raw());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(passport.initialize());

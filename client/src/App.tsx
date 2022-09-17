@@ -9,7 +9,7 @@ import { useContext } from 'react';
 const AppWithAuth: React.FC = () => {
   const { loading } = useContext(AuthContext);
 
-  return loading ? <>'...loading'</> : <Router />;
+  return loading ? <>loading...</> : <Router />;
 };
 
 function App() {

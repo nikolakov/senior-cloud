@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ padding: '2rem 0' }}>
+    <div style={{ paddingBottom: '2rem' }}>
       <UploadInput onFileUpload={fetchFiles} />
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
         {loading ? (

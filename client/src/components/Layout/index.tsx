@@ -7,7 +7,7 @@ const Layout: React.FC = () => {
   return (
     <>
       <Navbar />
-      <Container>
+      <Container style={{ paddingTop: '2rem' }}>
         <Outlet />
       </Container>
     </>

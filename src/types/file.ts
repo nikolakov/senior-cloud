@@ -28,3 +28,9 @@ export type CreateJobRequestDTO = {
 };
 
 export type CreateJobResponseDTO = { jobId: string; chunkSize: number } | ErrorResponseDTO;
+
+export type TempJWTResponseDTO =
+  | {
+      token: string;
+    }
+  | ErrorResponseDTO;

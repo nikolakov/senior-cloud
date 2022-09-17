@@ -71,18 +71,11 @@ const FileRow: React.FC<RowProps> = ({ file, onChange }) => {
         <div title={file.name}>{file.name}</div>
       </div>
       <div className={classes.DownloadContainer}>
-        <Button
-          size="sm"
-          href={`api/files/${profileInfo._id}/${file._id}/download`}
-          // target="_blank"
-        >
+        <Button size="sm" onClick={() => FilesService.download(profileInfo._id, file._id)}>
           Download
         </Button>
       </div>
       <div className={classes.MoreOptionsContainer}>
-        {/* <button className={classes.MoreOptionsButton}>
-          <i className="bi bi-three-dots" />
-        </button> */}
         <MoreOptionsDropdown fileId={file._id} onDelete={deleteFileHandler} />
       </div>
     </div>

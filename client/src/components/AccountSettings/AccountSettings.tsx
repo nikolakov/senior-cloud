@@ -30,7 +30,20 @@ const AccountSettings: React.FC = () => {
           }}
         >
           <i className="bi bi-person-circle" style={{ fontSize: '8rem' }}></i>
-          <h5>profile ID: {profileInfo._id}</h5>
+          {profileInfo.firstName || profileInfo.lastName ? (
+            <h4>
+              {profileInfo.firstName} {profileInfo.lastName}
+            </h4>
+          ) : null}
+          <h5
+            style={{
+              width: '100%',
+              textOverflow: 'ellipsis',
+              textAlign: 'center',
+            }}
+          >
+            profile ID: {profileInfo._id}
+          </h5>
         </Col>
       </Row>
       <Formik

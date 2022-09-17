@@ -2,7 +2,7 @@ import { Router } from 'express';
 import passport from 'passport';
 
 import User from '../../models/user';
-import { UpdateUserRequestDTO } from '../../types/user';
+import { UpdateUserRequestDTO } from 'types/user';
 
 const router = Router();
 

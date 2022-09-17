@@ -22,3 +22,7 @@ export type EditableUserProfile = Omit<UserProfile, '_id'>;
 export function isAxiosError<T = any>(error: AxiosError | any): error is AxiosError<T> {
   return error && error.isAxiosError;
 }
+
+export type TempJWTResponseDTO = {
+  token: string;
+};
