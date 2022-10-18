@@ -1,15 +1,17 @@
-import { useContext } from 'react';
+import { useContext, useRef } from 'react';
 import { Formik, Form } from 'formik';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import * as Yup from 'yup';
 import { Link } from 'react-router-dom';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 import { AuthContext } from 'contexts/auth-context';
 import TextInput from 'components/shared/Form/TextInput';
 import PasswordInput from 'components/shared/Form/PasswordInput';
-import { isAxiosError } from 'types';
+import config from 'config';
+import handleError from 'utils/handleError';
 
 const validationSchema = Yup.object().shape({
   username: Yup.string().required(),
@@ -23,6 +25,8 @@ type Props = {
 const LoginForm: React.FC<Props> = ({ callback }) => {
   const { login } = useContext(AuthContext);
 
+  const recaptchaRef = useRef<ReCAPTCHA | null>(null);
+
   return (
     <Formik
       initialValues={{ username: '', password: '' }}
@@ -34,12 +38,12 @@ const LoginForm: React.FC<Props> = ({ callback }) => {
           callback && callback();
         } catch (e: any) {
           console.log(e);
-          if (isAxiosError(e) && e.response?.data.error === 'incorrect_password') {
-            setErrors({ password: e.response.data.error });
-          } else if (isAxiosError(e) && e.response?.data.error === 'user_not_found') {
-            setErrors({ username: e.response.data.error });
+          const errorMessage = handleError(e);
+
+          if (errorMessage === 'user_not_found') {
+            setErrors({ username: errorMessage });
           } else {
-            setErrors({ password: e.message });
+            setErrors({ password: errorMessage });
           }
           setSubmitting(false);
         }
@@ -47,7 +51,7 @@ const LoginForm: React.FC<Props> = ({ callback }) => {
     >
       {({ isSubmitting }) => (
         <Form>
-          <Row>
+          <Row className="gy-3 mb-3">
             <TextInput
               xs={12}
               label="Your username:"
@@ -62,6 +66,9 @@ const LoginForm: React.FC<Props> = ({ callback }) => {
               name="password"
               autoComplete="current-password"
             />
+            <Col xs={12}>
+              <ReCAPTCHA ref={recaptchaRef} sitekey={config.RECAPTCHA_PUB_KEY} size="invisible" />
+            </Col>
           </Row>
           <Row className="justify-content-between align-items-center">
             <Col xs="auto">

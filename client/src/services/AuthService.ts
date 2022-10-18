@@ -146,11 +146,12 @@ const AuthService = {
     return loginResponse.data;
   },
 
-  register: async (username: string, email: string, password: string) => {
+  register: async (username: string, email: string, password: string, recaptchaToken: string) => {
     const registerResponse = await axiosAuthInstance.post<LoginResponse>('/register', {
       username,
       email,
       password,
+      recaptchaToken,
     });
 
     const { token } = registerResponse.data;

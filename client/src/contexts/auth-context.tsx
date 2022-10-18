@@ -7,7 +7,12 @@ import { UserProfile, EditableUserProfile } from '../types';
 
 export type AuthContextType = {
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (
+    username: string,
+    email: string,
+    password: string,
+    recaptchaToken: string
+  ) => Promise<void>;
   token: string | null;
   profileInfo: UserProfile;
   updateProfileInfo: (profileInfo: EditableUserProfile) => Promise<void>;
@@ -85,8 +90,13 @@ export const AuthContextProvider = ({ children }: any) => {
     setToken(token);
   };
 
-  const register = async (username: string, email: string, password: string) => {
-    const { token, user } = await AuthService.register(username, email, password);
+  const register = async (
+    username: string,
+    email: string,
+    password: string,
+    recaptchaToken: string
+  ) => {
+    const { token, user } = await AuthService.register(username, email, password, recaptchaToken);
 
     setProfileInfo(user);
     setToken(token);

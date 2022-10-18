@@ -1,14 +1,16 @@
-import { useContext } from 'react';
+import { useContext, useRef } from 'react';
 import { Formik, Form } from 'formik';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import * as Yup from 'yup';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 import { AuthContext } from 'contexts/auth-context';
 import TextInput from 'components/shared/Form/TextInput';
 import PasswordInput from 'components/shared/Form/PasswordInput';
-import { isAxiosError } from 'types';
+import handleError from 'utils/handleError';
+import config from 'config';
 
 const validationSchema = Yup.object().shape({
   username: Yup.string().required(),
@@ -30,31 +32,46 @@ type Props = {
 const RegisterForm: React.FC<Props> = ({ callback }) => {
   const { register } = useContext(AuthContext);
 
+  const captchaRef = useRef<ReCAPTCHA>(null);
+
   return (
     <Formik
       initialValues={{ username: '', email: '', password: '', passwordConfirmation: '' }}
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting, setErrors }) => {
+        let captchaToken = '';
+
         try {
-          await register(values.username, values.email, values.password);
+          try {
+            if (captchaRef.current) {
+              captchaToken = (await captchaRef.current.executeAsync()) || '';
+            }
+
+            if (!captchaToken) {
+              throw new Error();
+            }
+          } catch (e) {
+            throw new Error('captcha_failed');
+          }
+
+          await register(values.username, values.email, values.password, captchaToken);
           setSubmitting(false);
           callback && callback();
         } catch (e: any) {
           console.log(e);
-          if (isAxiosError(e) && e.response?.data.error === 'incorrect_password') {
-            setErrors({ password: e.response.data.error });
-          } else if (isAxiosError(e) && e.response?.data.error === 'user_not_found') {
-            setErrors({ username: e.response.data.error });
+          const errorMessage = handleError(e);
+
+          if (errorMessage === 'username_exists') {
+            setErrors({ username: errorMessage });
           } else {
-            setErrors({ password: e.message });
+            setErrors({ password: errorMessage });
           }
-          setSubmitting(false);
         }
       }}
     >
       {({ isSubmitting }) => (
         <Form>
-          <Row>
+          <Row className="gy-3 mb-3">
             <TextInput
               xs={12}
               label="Username"
@@ -88,6 +105,7 @@ const RegisterForm: React.FC<Props> = ({ callback }) => {
               required
             />
           </Row>
+          <ReCAPTCHA sitekey={config.RECAPTCHA_PUB_KEY} ref={captchaRef} size="invisible" />
           <Row className="justify-content-between align-items-center">
             <Col xs="auto">
               <Button type="submit" disabled={isSubmitting} variant="primary">

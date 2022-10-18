@@ -36,7 +36,7 @@ const PasswordInput: React.FC<Props> = ({
     <Col xs={xs} sm={sm} md={md} lg={lg} xl={xl} xxl={xxl}>
       <Field name={name} {...props}>
         {({ field, meta }: FieldProps) => (
-          <Form.Group className="mb-3">
+          <Form.Group>
             <Form.Label>
               {label}
               {required ? <RequiredStar /> : null}

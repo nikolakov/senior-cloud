@@ -64,7 +64,7 @@ const FilesService = {
 
     const link = document.createElement('a');
     document.body.appendChild(link);
-    link.href = `/api/${endpoint}/${userId}/${fileId}/download${createQueryParams({
+    link.href = `/api${endpoint}/${userId}/${fileId}/download${createQueryParams({
       token: res.data.token,
     })}`;
     link.setAttribute('type', 'hidden');
