@@ -4,12 +4,11 @@ import axios from 'axios';
 import User from '../models/user';
 import * as utils from '../lib/utils';
 import { LoginRequestDTO, AuthResponseDTO, RegisterRequestDTO } from 'types/auth';
-import config from '../config';
 
 const validateCaptcha = async (token: string) => {
   try {
     const res = await axios.post<{ success: boolean }>(
-      `https://www.google.com/recaptcha/api/siteverify?secret=${config.recaptchaSecretKey}&response=${token}`
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
     );
 
     return res.data.success;

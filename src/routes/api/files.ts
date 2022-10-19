@@ -7,9 +7,12 @@ import mongoose from 'mongoose';
 import UploadJob from '../../models/uploadJob';
 import File from '../../models/file';
 import { CreateJobRequestDTO, CreateJobResponseDTO, TempJWTResponseDTO } from 'types/file';
-import config from '../../config';
 import * as utils from '../../lib/utils';
 import JWTDownloadVerifier from '../../middlewares/JWTDownloadVerifier';
+
+const MAX_STORAGE = 100 * 1024 * 1024;
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
+const CHUNK_SIZE = 100 * 1024;
 
 const router = Router();
 
@@ -19,11 +22,11 @@ router.post<{}, CreateJobResponseDTO, CreateJobRequestDTO>(
   async (req, res) => {
     const { fileSize, fileName } = req.body;
 
-    if (fileSize > config.maxFilesize) {
+    if (fileSize > MAX_FILE_SIZE) {
       return res.status(400).send({ error: 'exceed_file_size_limit' });
     }
 
-    const chunks = Math.ceil(fileSize / config.chunkSize);
+    const chunks = Math.ceil(fileSize / CHUNK_SIZE);
 
     const newJob = new UploadJob({
       fileId: new mongoose.Types.ObjectId(),
@@ -38,7 +41,7 @@ router.post<{}, CreateJobResponseDTO, CreateJobRequestDTO>(
 
     const job = await newJob.save();
 
-    res.send({ jobId: job._id, chunkSize: config.chunkSize });
+    res.send({ jobId: job._id, chunkSize: CHUNK_SIZE });
   }
 );
 

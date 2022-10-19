@@ -3,19 +3,20 @@ import http from 'http';
 import mongoose from 'mongoose';
 import path from 'path';
 import passport from 'passport';
+import 'dotenv/config';
 
-import config from './config';
 import configPassport from './configPassport';
 import routes from './routes';
 import { isAddressInfo } from './types/custom';
 import createInitialUser from './lib/createInitialUser';
+import { initializeSpacesConnection } from './s3Client';
 
 // create express app
 const app = express();
 
 // Connect to db
-if (config.database) {
-  mongoose.connect(config.database);
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI);
   mongoose.connection.on('connected', () => {
     console.log('[server.ts] Connected to database');
     createInitialUser();
@@ -23,6 +24,8 @@ if (config.database) {
 } else {
   throw new Error('Missing configuration variables');
 }
+
+initializeSpacesConnection();
 
 // Standard express middlewares
 app.use(express.json());
@@ -48,7 +51,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // define port
-const PORT = config.port;
+const PORT = process.env.PORT || 8000;
 
 // start server
 server.listen(PORT, () => {

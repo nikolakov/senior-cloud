@@ -1,16 +1,14 @@
-import { useContext, useRef } from 'react';
+import { useContext } from 'react';
 import { Formik, Form } from 'formik';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import * as Yup from 'yup';
 import { Link } from 'react-router-dom';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 import { AuthContext } from 'contexts/auth-context';
 import TextInput from 'components/shared/Form/TextInput';
 import PasswordInput from 'components/shared/Form/PasswordInput';
-import config from 'config';
 import handleError from 'utils/handleError';
 
 const validationSchema = Yup.object().shape({
@@ -24,8 +22,6 @@ type Props = {
 
 const LoginForm: React.FC<Props> = ({ callback }) => {
   const { login } = useContext(AuthContext);
-
-  const recaptchaRef = useRef<ReCAPTCHA | null>(null);
 
   return (
     <Formik
@@ -66,9 +62,6 @@ const LoginForm: React.FC<Props> = ({ callback }) => {
               name="password"
               autoComplete="current-password"
             />
-            <Col xs={12}>
-              <ReCAPTCHA ref={recaptchaRef} sitekey={config.RECAPTCHA_PUB_KEY} size="invisible" />
-            </Col>
           </Row>
           <Row className="justify-content-between align-items-center">
             <Col xs="auto">

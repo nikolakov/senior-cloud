@@ -10,7 +10,6 @@ import { AuthContext } from 'contexts/auth-context';
 import TextInput from 'components/shared/Form/TextInput';
 import PasswordInput from 'components/shared/Form/PasswordInput';
 import handleError from 'utils/handleError';
-import config from 'config';
 
 const validationSchema = Yup.object().shape({
   username: Yup.string().required(),
@@ -105,7 +104,11 @@ const RegisterForm: React.FC<Props> = ({ callback }) => {
               required
             />
           </Row>
-          <ReCAPTCHA sitekey={config.RECAPTCHA_PUB_KEY} ref={captchaRef} size="invisible" />
+          <ReCAPTCHA
+            sitekey={process.env.REACT_APP_RECAPTCHA_KEY as string}
+            ref={captchaRef}
+            size="invisible"
+          />
           <Row className="justify-content-between align-items-center">
             <Col xs="auto">
               <Button type="submit" disabled={isSubmitting} variant="primary">
