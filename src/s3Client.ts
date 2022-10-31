@@ -22,7 +22,7 @@ export const s3Client = new S3({
 export const initializeSpacesConnection = async () => {
   try {
     const data = await s3Client.send(new ListBucketsCommand({}));
-    console.log('[s3Client.ts]', data.Buckets);
+    console.log('[s3Client.ts]', 'Connected to S3 Buckets');
   } catch (e) {
     console.log('Could not fetch buckets', e);
   }

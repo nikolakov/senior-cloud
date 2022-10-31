@@ -11,3 +11,10 @@ export type JobFromApi = {
   jobId: string;
   chunkSize: number;
 };
+
+export type JobFromApiv2 = {
+  urls: string[];
+  partSize: number;
+  UploadId: string;
+  fileId: string;
+};

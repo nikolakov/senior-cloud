@@ -1,31 +1,43 @@
-import { FileFromApi, JobFromApi, TempJWTResponseDTO } from 'types';
+import axios, { AxiosInstance } from 'axios';
+import { FileFromApi, JobFromApiv2 } from 'types';
 import ApiService from './ApiService';
-import { createQueryParams } from './utils';
 
 const endpoint = '/files';
 
 const FilesService = {
   async createUploadJob(fileName: string, fileSize: number) {
-    const res = await ApiService.post<JobFromApi>(`${endpoint}/createUploadJob`, {
+    const res = await ApiService.post<JobFromApiv2>(`${endpoint}/initiateUpload`, {
       fileName,
       fileSize,
     });
 
     return res.data;
   },
-  async uploadBatch(chunk: ArrayBuffer, jobId: string) {
-    await ApiService.post(`${endpoint}/upload${createQueryParams({ jobId })}`, chunk, {
-      headers: {
-        'content-type': 'application/octet-stream',
-      },
-      timeout: 3000,
-    });
+  async uploadBatch(part: ArrayBuffer, url: string, axiosInstance: AxiosInstance) {
+    const res = await axiosInstance.put(url, part);
+
+    console.log('headers:', res.headers);
+
+    return {
+      etag: res.headers.etag,
+    };
+  },
+  async finishUpload(etags: string[], fileId: string, UploadId: string) {
+    const res = await ApiService.post(`${endpoint}/finishUpload`, { etags, fileId, UploadId });
+
+    return res.data;
   },
   async uploadFile(file: File, onProgress: (fileProgress: number) => void) {
+    console.time('upload');
+    console.time('read file');
     const fileName = file.name;
+    const fileType = file.type;
+    console.log(fileType);
     const fileReader = new FileReader();
 
-    await new Promise<void>((resolve, reject) => {
+    const { urls, partSize, UploadId, fileId, buffer } = await new Promise<
+      JobFromApiv2 & { buffer: ArrayBuffer }
+    >((resolve, reject) => {
       fileReader.readAsArrayBuffer(file);
 
       fileReader.onload = async e => {
@@ -34,41 +46,59 @@ const FilesService = {
             throw new Error('Could not read file');
           }
 
-          const content = e.target.result;
+          const buffer = e.target.result;
 
-          const { jobId, chunkSize } = await this.createUploadJob(fileName, content.byteLength);
-          const totalChunks = Math.ceil(content.byteLength / chunkSize);
+          const res = await this.createUploadJob(fileName, buffer.byteLength);
 
-          for (let cIndex = 0; cIndex < totalChunks; cIndex++) {
-            let CHUNK = content.slice(cIndex * chunkSize, (cIndex + 1) * chunkSize);
-
-            await this.uploadBatch(CHUNK, jobId);
-
-            onProgress((cIndex + 1) / totalChunks);
-            if (cIndex + 1 === totalChunks) {
-              resolve();
-            }
-          }
+          console.timeEnd('read file');
+          resolve({ ...res, buffer });
         } catch (e) {
           reject(e);
         }
       };
     });
+
+    const axiosInstance = axios.create();
+    // investigate if this is necessary and why
+    // https://stackoverflow.com/questions/36301483/what-does-amazon-s3-use-the-content-type-header-for
+    // delete axiosInstance.defaults.headers.put['Content-Type'];
+
+    const totalParts = Math.ceil(buffer.byteLength / partSize);
+
+    const etags = [];
+
+    for (let pIndex = 0; pIndex < totalParts; pIndex++) {
+      let part = buffer.slice(pIndex * partSize, (pIndex + 1) * partSize);
+
+      const { etag } = await this.uploadBatch(part, urls[pIndex], axiosInstance);
+
+      etags.push(etag);
+
+      onProgress((pIndex + 1) / totalParts);
+    }
+
+    console.log(etags, fileId, UploadId);
+
+    const finishRes = await this.finishUpload(etags, fileId, UploadId);
+
+    console.timeEnd('upload');
+    console.log(finishRes);
   },
   getFiles: () => ApiService.get<FileFromApi[]>(`${endpoint}`),
-  getTempJWT() {
-    return ApiService.get<TempJWTResponseDTO>(`${endpoint}/tempJWT`);
+  getDownloadUrl: async (fileId: string) => {
+    const res = await ApiService.get<{ url: string }>(`${endpoint}/${fileId}/download`);
+
+    return res.data.url;
   },
-  async download(userId: string, fileId: string) {
-    const res = await this.getTempJWT();
+  async download(fileId: string) {
+    const url = await this.getDownloadUrl(fileId);
 
     const link = document.createElement('a');
-    document.body.appendChild(link);
-    link.href = `/api${endpoint}/${userId}/${fileId}/download${createQueryParams({
-      token: res.data.token,
-    })}`;
+    link.href = url;
     link.setAttribute('type', 'hidden');
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   },
   delete: (fileId: string) => ApiService.delete(`${endpoint}/${fileId}`),
 };

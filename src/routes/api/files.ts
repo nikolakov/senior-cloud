@@ -1,147 +1,253 @@
 import { Router } from 'express';
 import passport from 'passport';
-import fs from 'fs';
-import path from 'path';
-import mongoose from 'mongoose';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import {
+  CreateMultipartUploadCommand,
+  UploadPartCommand,
+  AbortMultipartUploadCommand,
+  ListMultipartUploadsCommand,
+  CompleteMultipartUploadCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 
-import UploadJob from '../../models/uploadJob';
+import { s3Client } from '../../s3Client';
 import File from '../../models/file';
-import { CreateJobRequestDTO, CreateJobResponseDTO, TempJWTResponseDTO } from 'types/file';
-import * as utils from '../../lib/utils';
-import JWTDownloadVerifier from '../../middlewares/JWTDownloadVerifier';
+import {
+  InitiateUploadResponseDTO,
+  InitiateUploadRequestDTO,
+  FinishUploadRequestDTO,
+} from 'types/file';
 
-const MAX_STORAGE = 100 * 1024 * 1024;
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
-const CHUNK_SIZE = 100 * 1024;
+const MAX_STORAGE = 1024 * 1024 * 1024;
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
+const PART_SIZE = 5 * 1024 * 1024;
 
 const router = Router();
 
-router.post<{}, CreateJobResponseDTO, CreateJobRequestDTO>(
-  '/createUploadJob',
+const initiateMultipartUpload = async (fileName: string) => {
+  const command = new CreateMultipartUploadCommand({
+    // think of a way to have the same bucket names in prod & dev
+    // or store bucket names in env variables too
+    Bucket: 'senior-cloud-dev',
+    Key: fileName,
+  });
+
+  const data = await s3Client.send(command);
+
+  return data.UploadId;
+};
+
+const generatePresignedPartUrls = async (fileName: string, UploadId: string, parts: number) => {
+  const promises = [];
+
+  for (let i = 0; i < parts; i++) {
+    const command = new UploadPartCommand({
+      Bucket: 'senior-cloud-dev',
+      Key: fileName,
+      PartNumber: i + 1,
+      UploadId,
+    });
+
+    const promise = getSignedUrl(s3Client, command, { expiresIn: 60 * 60 });
+
+    promises.push(promise);
+  }
+
+  const urls = await Promise.all(promises);
+
+  return urls;
+};
+
+const abortMultipartUpload = async (fileName: string, UploadId: string) => {
+  const command = new AbortMultipartUploadCommand({
+    Bucket: 'senior-cloud-dev',
+    Key: fileName,
+    UploadId,
+  });
+
+  const res = await s3Client.send(command);
+
+  return res;
+};
+
+const listMultipartUploads = async () => {
+  const command = new ListMultipartUploadsCommand({
+    Bucket: 'senior-cloud-dev',
+  });
+
+  const res = await s3Client.send(command);
+
+  return res;
+};
+
+const completeMultipartUpload = async (etags: string[], UploadId: string, fileId: string) => {
+  const Parts = etags.map((etag, index) => ({
+    ETag: etag,
+    PartNumber: index + 1,
+  }));
+
+  const command = new CompleteMultipartUploadCommand({
+    Bucket: 'senior-cloud-dev',
+    Key: fileId,
+    UploadId: UploadId,
+    MultipartUpload: { Parts },
+  });
+
+  const res = await s3Client.send(command);
+
+  return res;
+};
+
+const generateDownloadUrl = async (fileId: string, fileName: string) => {
+  const command = new GetObjectCommand({
+    Bucket: 'senior-cloud-dev',
+    Key: fileId,
+    ResponseContentDisposition: `filename="${fileName}"`,
+  });
+
+  const res = await getSignedUrl(s3Client, command, { expiresIn: 60 });
+
+  return res;
+};
+
+const deleteFile = async (fileId: string) => {
+  const command = new DeleteObjectCommand({
+    Bucket: 'senior-cloud-dev',
+    Key: fileId,
+  });
+
+  const res = await s3Client.send(command);
+
+  return res;
+};
+
+router.post<{}, InitiateUploadResponseDTO, InitiateUploadRequestDTO>(
+  '/initiateUpload',
   passport.authenticate('jwt', { session: false }),
-  async (req, res) => {
+  async (req, res, next) => {
     const { fileSize, fileName } = req.body;
 
-    if (fileSize > MAX_FILE_SIZE) {
-      return res.status(400).send({ error: 'exceed_file_size_limit' });
-    }
-
-    const chunks = Math.ceil(fileSize / CHUNK_SIZE);
-
-    const newJob = new UploadJob({
-      fileId: new mongoose.Types.ObjectId(),
+    const newFile = new File({
       name: fileName,
       owner: req.user?._id,
       fileSize,
-      totalChunks: chunks,
-      chunksCount: 0,
-      createdAt: Date.now(),
-      modifiedAt: Date.now(),
     });
 
-    const job = await newJob.save();
+    const file = await newFile.save();
 
-    res.send({ jobId: job._id, chunkSize: CHUNK_SIZE });
+    const fileId = file._id.toString();
+
+    const UploadId = await initiateMultipartUpload(fileId);
+
+    if (!UploadId) {
+      return res.status(503).send({ error: 's3_unavailable' });
+    }
+
+    const numberOfParts = Math.ceil(fileSize / PART_SIZE);
+
+    const urls = await generatePresignedPartUrls(fileId, UploadId, numberOfParts);
+
+    res.send({
+      UploadId,
+      urls,
+      fileId,
+      partSize: PART_SIZE,
+    });
   }
 );
 
-router.post('/upload', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const { jobId } = req.query;
+router.post<{}, {}, FinishUploadRequestDTO>(
+  '/finishUpload',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res, next) => {
+    const { etags, fileId, UploadId } = req.body;
 
-  if (!jobId) {
-    return res.status(400).send({ error: 'missing_job_id' });
+    const file = await File.findOne({ _id: fileId });
+
+    if (!file) {
+      return res.status(400).send({ error: 'file_not_found' });
+    }
+
+    await completeMultipartUpload(etags, UploadId, fileId);
+
+    await file.updateOne({ uploaded: true, modifiedAt: Date.now() });
+
+    res.status(200).end();
   }
+);
 
-  const job = await UploadJob.findOne({ _id: jobId });
+// This is intended for dev purposes only
+// Aborts all unfinished uploads
+router.post(
+  '/abortUploads',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res, next) => {
+    const listUploadsResponse = await listMultipartUploads();
 
-  if (!job) {
-    return res.status(400).send({ error: 'job_not_found' });
-  }
+    const promises: Promise<any>[] = [];
 
-  const uploadDir = `${process.cwd()}/uploads`;
+    listUploadsResponse.Uploads?.forEach(upload => {
+      if (upload.Key && upload.UploadId) {
+        const promise = abortMultipartUpload(upload.Key, upload.UploadId);
 
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-  }
-
-  fs.appendFileSync(path.join(uploadDir, job.fileId.toString()), req.body);
-
-  const newCount = job.chunksCount + 1;
-  await job.updateOne({ chunksCount: newCount, modifiedAt: Date.now() });
-
-  if (newCount === job.totalChunks) {
-    const newFile = new File({
-      _id: job.fileId,
-      name: job.name,
-      owner: job.owner,
-      fileSize: job.fileSize,
-      createdAt: Date.now(),
-      modifiedAt: Date.now(),
+        promises.push(promise);
+      }
     });
 
-    await newFile.save();
+    await Promise.all(promises);
+
+    const listAfterDeleteResponse = await listMultipartUploads();
+
+    res.send({
+      deleted: promises.length,
+      before: listUploadsResponse,
+      after: listAfterDeleteResponse,
+    });
   }
+);
 
-  res.status(200).end();
-});
-
-router.get('/', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const files = await File.find({ owner: req.user?._id });
+router.get('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
+  const files = await File.find({ owner: req.user?._id, uploaded: true, deletedAt: undefined });
 
   res.send(files);
 });
 
-router.get<{}, TempJWTResponseDTO, {}>(
-  '/tempJWT',
+router.get(
+  '/:fileId/download',
   passport.authenticate('jwt', { session: false }),
-  (req, res, next) => {
-    try {
-      if (req.user) {
-        const { token } = utils.issueJWT(req.user, '3s');
+  async (req, res, next) => {
+    const { fileId } = req.params;
 
-        res.send({ token });
-      }
-    } catch (e) {
-      next(e);
+    const file = await File.findOne({ _id: fileId, uploaded: true, deletedAt: undefined });
+
+    if (!file) {
+      return res.status(404).end();
     }
+
+    const url = await generateDownloadUrl(fileId, file.name);
+
+    return res.send({ url });
   }
 );
 
-router.get('/:userId/:fileId/download', JWTDownloadVerifier, async (req, res) => {
-  const { fileId, userId } = req.params;
-  const file = await File.findOne({ _id: fileId, owner: userId });
-
-  if (!file) {
-    return res.status(404).end();
-  }
-
-  const path = `${process.cwd()}/uploads/${file._id}`;
-
-  res.download(path, file.name);
-});
-
-router.delete('/:fileId', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  try {
+router.delete(
+  '/:fileId',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res, next) => {
     const { fileId } = req.params;
 
-    const file = await File.findOne({ _id: fileId, owner: req.user?._id });
+    const file = await File.findOne({ _id: fileId, uploaded: true, deletedAt: undefined });
 
-    if (file) {
-      const path = `${process.cwd()}/uploads/${fileId}`;
-
-      console.log(`deleting ${file.name}...`);
-
-      fs.unlink(path, () => {
-        console.log(`file ${file.name} deleted`);
-      });
-
-      await file.delete();
+    if (!file) {
+      return res.status(204).end();
     }
-  } catch (e: any) {
-    console.log(e.message);
-  }
 
-  res.status(204).end();
-});
+    await file.updateOne({ deletedAt: Date.now() });
+    await deleteFile(fileId);
+
+    return res.status(204).end();
+  }
+);
 
 export default router;

@@ -5,6 +5,7 @@ export interface IFile extends Document {
   name: string;
   owner: Types.ObjectId;
   fileSize: number;
+  uploaded: boolean;
   createdAt: number;
   modifiedAt: number;
   deletedAt?: number;
@@ -34,3 +35,19 @@ export type TempJWTResponseDTO =
       token: string;
     }
   | ErrorResponseDTO;
+
+export type InitiateUploadRequestDTO = {
+  fileName: string;
+  fileSize: number;
+};
+
+export type InitiateUploadResponseDTO =
+  | {
+      UploadId: string;
+      urls: string[];
+      fileId: string[];
+      partSize: number;
+    }
+  | ErrorResponseDTO;
+
+export type FinishUploadRequestDTO = { etags: string[]; fileId: string; UploadId: string };

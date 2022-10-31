@@ -3,7 +3,6 @@ import Button from 'react-bootstrap/Button';
 
 import { FileFromApi } from 'types';
 import MoreOptionsDropdown from './MoreOptionsDropdown';
-import useAuth from 'hooks/useAuth';
 
 import classes from './styles.module.css';
 import FilesService from 'services/FilesService';
@@ -51,8 +50,6 @@ const TableHeader: React.FC = () => {
 };
 
 const FileRow: React.FC<RowProps> = ({ file, onChange }) => {
-  const { profileInfo } = useAuth();
-
   const deleteFileHandler = async (fileId: string) => {
     try {
       await FilesService.delete(fileId);
@@ -71,7 +68,7 @@ const FileRow: React.FC<RowProps> = ({ file, onChange }) => {
         <div title={file.name}>{file.name}</div>
       </div>
       <div className={classes.DownloadContainer}>
-        <Button size="sm" onClick={() => FilesService.download(profileInfo._id, file._id)}>
+        <Button size="sm" onClick={() => FilesService.download(file._id)}>
           Download
         </Button>
       </div>
