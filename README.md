@@ -1,15 +1,21 @@
-# Senior Cloud;
+# Senior Cloud
+
+### Author: Bogdan Nikolakov
 
 ## Server stack:
 
 NodeJS  
 Typescript  
 Express  
-Mongo  
-Passport with JWT strategy
+Mongoose  
+MongoDB on Atlas  
+Passport with JWT strategy  
+DigitalOcean Spaces with S3 AWS SDK v3
 
 ## Client stack:
 
 ReactJS  
 Typescript  
-react-bootstrap
+React Bootstrap
+
+---
