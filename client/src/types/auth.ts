@@ -1,5 +1,10 @@
 import { AxiosError } from 'axios';
 
+export enum Role {
+  Manager = 'manager',
+  User = 'user',
+}
+
 export type LoginResponse = {
   token: string;
   expiresIn: string;
@@ -13,16 +18,13 @@ export type UserProfile = {
   lastName?: string;
   username: string;
   email: string;
+  role: Role;
 };
 
-export type EditableUserProfile = Omit<UserProfile, '_id'>;
+export type EditableUserProfile = Partial<Omit<UserProfile, '_id'>>;
 
 // type guards
 
 export function isAxiosError<T = any>(error: AxiosError | any): error is AxiosError<T> {
   return error && error.isAxiosError;
 }
-
-export type TempJWTResponseDTO = {
-  token: string;
-};

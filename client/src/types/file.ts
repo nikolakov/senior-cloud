@@ -3,16 +3,12 @@ export type FileFromApi = {
   name: string;
   owner: string;
   fileSize: number;
+  uploaded: boolean;
   createdAt: number;
   modifiedAt: number;
 };
 
-export type JobFromApi = {
-  jobId: string;
-  chunkSize: number;
-};
-
-export type JobFromApiv2 = {
+export type InitiateUploadResponse = {
   urls: string[];
   partSize: number;
   UploadId: string;

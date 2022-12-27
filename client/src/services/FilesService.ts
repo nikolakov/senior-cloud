@@ -1,106 +1,160 @@
 import axios, { AxiosInstance } from 'axios';
-import { FileFromApi, JobFromApiv2 } from 'types';
+import { FileFromApi, InitiateUploadResponse } from 'types';
 import ApiService from './ApiService';
 
 const endpoint = '/files';
 
-const FilesService = {
-  async createUploadJob(fileName: string, fileSize: number) {
-    const res = await ApiService.post<JobFromApiv2>(`${endpoint}/initiateUpload`, {
-      fileName,
-      fileSize,
-    });
+class FilesService {
+  static async uploadFile(file: File, onProgress: (fileProgress: number) => void) {
+    await new FileUploader(file, onProgress).uploadFile();
+  }
 
-    return res.data;
-  },
-  async uploadBatch(part: ArrayBuffer, url: string, axiosInstance: AxiosInstance) {
-    const res = await axiosInstance.put(url, part);
+  static getFiles() {
+    return ApiService.get<FileFromApi[]>(`${endpoint}`);
+  }
 
-    console.log('headers:', res.headers);
+  static download(fileId: string) {
+    new FileDownloader(fileId).download();
+  }
 
-    return {
-      etag: res.headers.etag,
-    };
-  },
-  async finishUpload(etags: string[], fileId: string, UploadId: string) {
-    const res = await ApiService.post(`${endpoint}/finishUpload`, { etags, fileId, UploadId });
+  static delete(fileId: string) {
+    return ApiService.delete(`${endpoint}/${fileId}`);
+  }
+}
 
-    return res.data;
-  },
-  async uploadFile(file: File, onProgress: (fileProgress: number) => void) {
-    console.time('upload');
-    console.time('read file');
-    const fileName = file.name;
-    const fileType = file.type;
-    console.log(fileType);
+class FileUploader {
+  private file: File;
+  private fileName: string;
+  private fileType: string;
+  private onProgress: (fileProgress: number) => void;
+
+  private buffer: ArrayBuffer = new ArrayBuffer(0);
+  private urls: string[] = [];
+  private partSize: number = 0;
+  private UploadId: string = '';
+  private fileId: string = '';
+  private etags: string[] = [];
+
+  constructor(file: File, onProgress: (fileProgress: number) => void) {
+    this.file = file;
+    this.fileName = file.name;
+    this.fileType = file.type;
+
+    this.onProgress = onProgress;
+  }
+
+  async uploadFile() {
+    await this.readFile();
+    await this.createUploadJob();
+    await this.uploadParts();
+    await this.finishUpload();
+  }
+
+  private async readFile() {
     const fileReader = new FileReader();
 
-    const { urls, partSize, UploadId, fileId, buffer } = await new Promise<
-      JobFromApiv2 & { buffer: ArrayBuffer }
-    >((resolve, reject) => {
-      fileReader.readAsArrayBuffer(file);
+    this.buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+      fileReader.readAsArrayBuffer(this.file);
 
       fileReader.onload = async e => {
         try {
-          if (!e.target?.result || !(e.target.result instanceof ArrayBuffer)) {
+          if (!e.target?.result || !(e.target.result instanceof ArrayBuffer))
             throw new Error('Could not read file');
-          }
 
           const buffer = e.target.result;
-
-          const res = await this.createUploadJob(fileName, buffer.byteLength);
-
-          console.timeEnd('read file');
-          resolve({ ...res, buffer });
+          resolve(buffer);
         } catch (e) {
           reject(e);
         }
       };
     });
+  }
 
+  private async createUploadJob() {
+    const res = await ApiService.post<InitiateUploadResponse>(`${endpoint}/initiateUpload`, {
+      fileName: this.fileName,
+      fileSize: this.buffer.byteLength,
+    });
+
+    this.urls = res.data.urls;
+    this.partSize = res.data.partSize;
+    this.UploadId = res.data.UploadId;
+    this.fileId = res.data.fileId;
+  }
+
+  private async uploadParts() {
     const axiosInstance = axios.create();
     // investigate if this is necessary and why
     // https://stackoverflow.com/questions/36301483/what-does-amazon-s3-use-the-content-type-header-for
     // delete axiosInstance.defaults.headers.put['Content-Type'];
 
-    const totalParts = Math.ceil(buffer.byteLength / partSize);
-
-    const etags = [];
+    const totalParts = this.getTotalNumberOfParts();
 
     for (let pIndex = 0; pIndex < totalParts; pIndex++) {
-      let part = buffer.slice(pIndex * partSize, (pIndex + 1) * partSize);
-
-      const { etag } = await this.uploadBatch(part, urls[pIndex], axiosInstance);
-
-      etags.push(etag);
-
-      onProgress((pIndex + 1) / totalParts);
+      await this.uploadSinglePart(pIndex, axiosInstance);
+      this.updateExternalProgress(pIndex, totalParts);
     }
+  }
 
-    console.log(etags, fileId, UploadId);
+  private getTotalNumberOfParts() {
+    return Math.ceil(this.buffer.byteLength / this.partSize);
+  }
 
-    const finishRes = await this.finishUpload(etags, fileId, UploadId);
+  private async uploadSinglePart(pIndex: number, axiosInstance: AxiosInstance) {
+    let part = this.buffer.slice(pIndex * this.partSize, (pIndex + 1) * this.partSize);
 
-    console.timeEnd('upload');
-    console.log(finishRes);
-  },
-  getFiles: () => ApiService.get<FileFromApi[]>(`${endpoint}`),
-  getDownloadUrl: async (fileId: string) => {
-    const res = await ApiService.get<{ url: string }>(`${endpoint}/${fileId}/download`);
+    const res = await axiosInstance.put(this.urls[pIndex], part);
+    this.etags.push(res.headers.etag);
+  }
+
+  private async updateExternalProgress(pIndex: number, totalParts: number) {
+    this.onProgress((pIndex + 1) / totalParts);
+  }
+
+  private finishUpload() {
+    return ApiService.post(`${endpoint}/finishUpload`, {
+      etags: this.etags,
+      fileId: this.fileId,
+      UploadId: this.UploadId,
+    });
+  }
+}
+
+class FileDownloader {
+  private fileId: string;
+
+  constructor(fileId: string) {
+    this.fileId = fileId;
+  }
+
+  async download() {
+    const url = await this.getDownloadUrl();
+
+    FileDownloader.clickDownloadLink(url);
+  }
+
+  private async getDownloadUrl() {
+    const res = await ApiService.get<{ url: string }>(`${endpoint}/${this.fileId}/download`);
 
     return res.data.url;
-  },
-  async download(fileId: string) {
-    const url = await this.getDownloadUrl(fileId);
+  }
 
+  private static clickDownloadLink(url: string) {
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('type', 'hidden');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  },
-  delete: (fileId: string) => ApiService.delete(`${endpoint}/${fileId}`),
-};
+  }
+}
+
+// console.time('upload');
+// console.time('read file');
+
+// console.log(this.fileType);
+
+// console.timeEnd('read file');
+// console.timeEnd('upload');
 
 export default FilesService;

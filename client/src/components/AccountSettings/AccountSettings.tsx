@@ -6,7 +6,8 @@ import * as Yup from 'yup';
 
 import useAuth from 'hooks/useAuth';
 import TextInput from 'components/shared/Form/TextInput';
-import { isAxiosError } from 'types';
+import handleError from 'utils/handleError';
+import ManagerSection from './ManagerSection';
 
 const validationSchema = Yup.object().shape({
   username: Yup.string().required(),
@@ -58,13 +59,11 @@ const AccountSettings: React.FC = () => {
             await updateProfileInfo(values);
             setSubmitting(false);
           } catch (e: any) {
-            console.log(e);
-            if (isAxiosError(e) && e.response?.data.error === 'username_taken') {
-              setErrors({ username: e.response.data.error });
-            } else if (isAxiosError(e) && e.response?.data.error === 'email_in_use') {
-              setErrors({ email: e.response.data.error });
+            const message = handleError(e);
+            if (message === 'username_taken') {
+              setErrors({ username: message });
             } else {
-              setErrors({ email: e.message });
+              setErrors({ email: message });
             }
             setSubmitting(false);
           }
@@ -73,7 +72,7 @@ const AccountSettings: React.FC = () => {
       >
         {({ isSubmitting }) => (
           <Form>
-            <Row>
+            <Row className="gy-3 mb-3">
               <TextInput
                 xs={12}
                 sm={6}
@@ -109,6 +108,7 @@ const AccountSettings: React.FC = () => {
           </Form>
         )}
       </Formik>
+      <ManagerSection />
     </div>
   );
 };

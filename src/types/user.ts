@@ -1,7 +1,7 @@
 import { Document } from 'mongoose';
 
 export enum Role {
-  Administrator = 'administrator',
+  Manager = 'manager',
   User = 'user',
 }
 
@@ -16,11 +16,12 @@ export interface User {
   modifiedAt: number;
   deletedAt?: number;
   role: Role;
+  administratorLevel: number;
 }
 
 export interface IUser extends Document, User {}
 
 export type UpdateUserRequestDTO = Omit<
   User,
-  'hash' | 'salt' | 'createdAt' | 'modifiedAt' | 'deletedAt' | 'role'
+  'hash' | 'salt' | 'createdAt' | 'modifiedAt' | 'deletedAt' | 'role' | 'administratorLevel'
 >;

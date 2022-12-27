@@ -23,19 +23,6 @@ export interface IUploadJob extends Document {
   deletedAt?: number;
 }
 
-export type CreateJobRequestDTO = {
-  fileName: string;
-  fileSize: number;
-};
-
-export type CreateJobResponseDTO = { jobId: string; chunkSize: number } | ErrorResponseDTO;
-
-export type TempJWTResponseDTO =
-  | {
-      token: string;
-    }
-  | ErrorResponseDTO;
-
 export type InitiateUploadRequestDTO = {
   fileName: string;
   fileSize: number;
@@ -51,3 +38,7 @@ export type InitiateUploadResponseDTO =
   | ErrorResponseDTO;
 
 export type FinishUploadRequestDTO = { etags: string[]; fileId: string; UploadId: string };
+
+export type FinishUploadResponseDTO = {} | ErrorResponseDTO;
+
+export type DownloadFileResponseDTO = { url: string };

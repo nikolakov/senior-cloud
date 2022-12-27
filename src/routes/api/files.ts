@@ -17,6 +17,7 @@ import {
   InitiateUploadResponseDTO,
   InitiateUploadRequestDTO,
   FinishUploadRequestDTO,
+  DownloadFileResponseDTO,
 } from 'types/file';
 
 const MAX_STORAGE = 1024 * 1024 * 1024;
@@ -173,7 +174,7 @@ router.post<{}, {}, FinishUploadRequestDTO>(
 
     await file.updateOne({ uploaded: true, modifiedAt: Date.now() });
 
-    res.status(200).end();
+    res.status(204).end();
   }
 );
 
@@ -213,7 +214,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), async (req, re
   res.send(files);
 });
 
-router.get(
+router.get<{ fileId: string }, DownloadFileResponseDTO>(
   '/:fileId/download',
   passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {
@@ -231,7 +232,7 @@ router.get(
   }
 );
 
-router.delete(
+router.delete<{ fileId: string }>(
   '/:fileId',
   passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {

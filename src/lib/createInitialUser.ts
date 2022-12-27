@@ -30,7 +30,7 @@ const createInitialUser = async () => {
       createdAt: Date.now(),
       modifiedAt: Date.now(),
       deletedAt: undefined,
-      role: Role.Administrator,
+      role: Role.User,
     });
 
     await newUser.save();
