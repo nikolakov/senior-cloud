@@ -6,14 +6,30 @@ import path from 'path';
 import { IUser } from '../types/user';
 
 const keyPath = path.join(process.cwd(), 'cert', 'private.pem');
-const PRIVATE_KEY = fs.readFileSync(keyPath, 'utf-8');
+let PRIVATE_KEY: string;
+
+try {
+  PRIVATE_KEY = fs.readFileSync(keyPath, 'utf-8');
+} catch (e) {
+  if (process.env.PRIVATE_KEY) {
+    PRIVATE_KEY = process.env.PRIVATE_KEY;
+  } else {
+    throw new Error('No RSA Private Key');
+  }
+}
 
 const pubKeyPath = path.join(process.cwd(), 'cert', 'public.pem');
-const PUB_KEY = fs.readFileSync(pubKeyPath, 'utf-8');
+let PUB_KEY: string;
 
-/**
- * -------------- HELPER FUNCTIONS ----------------
- */
+try {
+  PUB_KEY = fs.readFileSync(pubKeyPath, 'utf-8');
+} catch (e) {
+  if (process.env.PUB_KEY) {
+    PUB_KEY = process.env.PUB_KEY;
+  } else {
+    throw new Error('No RSA Public Key');
+  }
+}
 
 /**
  *

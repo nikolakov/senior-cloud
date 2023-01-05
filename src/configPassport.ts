@@ -4,8 +4,18 @@ import User from './models/user';
 import { PassportStatic } from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions } from 'passport-jwt';
 
-const keyPath = path.join(process.cwd(), 'cert', 'public.pem');
-const PUB_KEY = fs.readFileSync(keyPath, 'utf-8');
+const pubKeyPath = path.join(process.cwd(), 'cert', 'public.pem');
+let PUB_KEY: string;
+
+try {
+  PUB_KEY = fs.readFileSync(pubKeyPath, 'utf-8');
+} catch (e) {
+  if (process.env.PUB_KEY) {
+    PUB_KEY = process.env.PUB_KEY;
+  } else {
+    throw new Error('No RSA Public Key');
+  }
+}
 
 // TODO
 const options: StrategyOptions = {
