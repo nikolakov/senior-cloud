@@ -1,5 +1,6 @@
 import { IUser } from './user';
-import { ErrorResponseDTO } from './common';
+
+type ErrorResponseDTO = { error: string };
 
 export type LoginRequestDTO = {
   username: string;

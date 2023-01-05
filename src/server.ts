@@ -11,10 +11,8 @@ import { isAddressInfo } from './types/custom';
 import createInitialUser from './lib/createInitialUser';
 import { initializeSpacesConnection } from './s3Client';
 
-// create express app
 const app = express();
 
-// Connect to db
 if (process.env.MONGO_URI) {
   mongoose.connect(process.env.MONGO_URI);
   mongoose.connection.on('connected', () => {
@@ -27,7 +25,6 @@ if (process.env.MONGO_URI) {
 
 initializeSpacesConnection();
 
-// Standard express middlewares
 app.use(express.json());
 app.use(express.raw());
 app.use(express.urlencoded({ extended: true }));
@@ -37,23 +34,20 @@ configPassport(passport);
 
 app.use(routes);
 
-// app should be your express app
 const server = http.createServer(app);
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('client/build'));
+  app.use(express.static(path.join(__dirname, '../client/build')));
 
   app.get('*', (req, res) => {
-    res.sendFile(path.resolve(process.cwd(), 'client', 'build', 'index.html'));
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
   });
-} else {
-  app.use(express.static('public'));
 }
 
-// define port
+console.log(path.join(__dirname, '../client/build/index.html'));
+
 const PORT = process.env.PORT || 8000;
 
-// start server
 server.listen(PORT, () => {
   const addressInfo = server.address();
   if (addressInfo && isAddressInfo(addressInfo)) {
