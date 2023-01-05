@@ -1,18 +1,18 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate, Location } from 'react-router-dom';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 import RegisterForm from './RegisterForm';
-import { AuthContext } from 'contexts/auth-context';
 import Card from './Card';
+import useAuth from 'hooks/useAuth';
 
 const RegisterPage: React.FC = () => {
   const location = useLocation();
   const from = (location.state as { from?: Location } | undefined)?.from?.pathname || '/';
 
   const navigate = useNavigate();
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn } = useAuth();
 
   useEffect(() => {
     if (isLoggedIn) {

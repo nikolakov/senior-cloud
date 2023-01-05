@@ -1,7 +1,5 @@
-import { useContext } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
-import { AuthContext } from 'contexts/auth-context';
 import Layout from 'components/Layout';
 // import Home from 'components/Home';
 import LoginPage from 'components/Login/LoginPage';
@@ -9,13 +7,14 @@ import RegisterPage from 'components/Login/RegisterPage';
 import Dashboard from 'components/Dashboard';
 import Page404 from 'components/Layout/Page404';
 import AccountSettings from 'components/AccountSettings/AccountSettings';
+import useAuth from 'hooks/useAuth';
 
 type RequireAuthProps = {
   children?: React.ReactNode;
 };
 
 const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn } = useAuth();
   let location = useLocation();
 
   if (!isLoggedIn) {

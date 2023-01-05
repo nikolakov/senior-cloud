@@ -1,7 +1,8 @@
 import { RequestHandler } from 'express';
 
 import * as utils from '../lib/utils';
-import { ErrorResponseDTO } from 'types/common';
+
+type ErrorResponseDTO = { error: string };
 
 // Middlware for download Verifier
 const JWTDownloadVerifier: RequestHandler<any, ErrorResponseDTO, {}, { token: string }> = async (

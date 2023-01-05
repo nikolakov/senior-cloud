@@ -1,16 +1,14 @@
-import { useContext } from 'react';
 import BSNavbar from 'react-bootstrap/Navbar';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Button from 'react-bootstrap/Button';
 import NavDropdown from 'react-bootstrap/NavDropdown';
-
 import { Link, NavLink } from 'react-router-dom';
 
-import { AuthContext } from 'contexts/auth-context';
+import useAuth from 'hooks/useAuth';
 
 const Navbar: React.FC = () => {
-  const { isLoggedIn, profileInfo, logout } = useContext(AuthContext);
+  const { isLoggedIn, profileInfo, logout } = useAuth();
 
   return (
     <BSNavbar bg="dark" variant="dark" expand="md">

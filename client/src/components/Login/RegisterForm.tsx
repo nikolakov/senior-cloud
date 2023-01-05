@@ -1,4 +1,4 @@
-import { useContext, useRef } from 'react';
+import { useRef } from 'react';
 import { Formik, Form } from 'formik';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
@@ -6,10 +6,10 @@ import Col from 'react-bootstrap/Col';
 import * as Yup from 'yup';
 import ReCAPTCHA from 'react-google-recaptcha';
 
-import { AuthContext } from 'contexts/auth-context';
 import TextInput from 'components/shared/Form/TextInput';
 import PasswordInput from 'components/shared/Form/PasswordInput';
 import handleError from 'utils/handleError';
+import useAuth from 'hooks/useAuth';
 
 const validationSchema = Yup.object().shape({
   username: Yup.string().required(),
@@ -29,7 +29,7 @@ type Props = {
 };
 
 const RegisterForm: React.FC<Props> = ({ callback }) => {
-  const { register } = useContext(AuthContext);
+  const { register } = useAuth();
 
   const captchaRef = useRef<ReCAPTCHA>(null);
 

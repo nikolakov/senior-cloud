@@ -1,4 +1,3 @@
-import { useContext } from 'react';
 import { Formik, Form } from 'formik';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
@@ -6,10 +5,10 @@ import Col from 'react-bootstrap/Col';
 import * as Yup from 'yup';
 import { Link } from 'react-router-dom';
 
-import { AuthContext } from 'contexts/auth-context';
 import TextInput from 'components/shared/Form/TextInput';
 import PasswordInput from 'components/shared/Form/PasswordInput';
 import handleError from 'utils/handleError';
+import useAuth from 'hooks/useAuth';
 
 const validationSchema = Yup.object().shape({
   username: Yup.string().required(),
@@ -21,7 +20,7 @@ type Props = {
 };
 
 const LoginForm: React.FC<Props> = ({ callback }) => {
-  const { login } = useContext(AuthContext);
+  const { login } = useAuth();
 
   return (
     <Formik

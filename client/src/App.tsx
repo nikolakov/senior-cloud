@@ -1,13 +1,13 @@
 import { BrowserRouter } from 'react-router-dom';
 
 import Router from './Routes';
-import { AuthContext, AuthContextProvider } from './contexts/auth-context';
+import { AuthContextProvider } from './contexts/auth-context';
 import './styles/bootstrapTheme.scss';
 import './App.css';
-import { useContext } from 'react';
+import useAuth from 'hooks/useAuth';
 
 const AppWithAuth: React.FC = () => {
-  const { loading } = useContext(AuthContext);
+  const { loading } = useAuth();
 
   return loading ? <>loading...</> : <Router />;
 };

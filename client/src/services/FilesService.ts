@@ -31,7 +31,7 @@ class FileUploader {
   private buffer: ArrayBuffer = new ArrayBuffer(0);
   private urls: string[] = [];
   private partSize: number = 0;
-  private UploadId: string = '';
+  private uploadId: string = '';
   private fileId: string = '';
   private etags: string[] = [];
 
@@ -78,7 +78,7 @@ class FileUploader {
 
     this.urls = res.data.urls;
     this.partSize = res.data.partSize;
-    this.UploadId = res.data.UploadId;
+    this.uploadId = res.data.uploadId;
     this.fileId = res.data.fileId;
   }
 
@@ -115,7 +115,7 @@ class FileUploader {
     return ApiService.post(`${endpoint}/finishUpload`, {
       etags: this.etags,
       fileId: this.fileId,
-      UploadId: this.UploadId,
+      uploadId: this.uploadId,
     });
   }
 }

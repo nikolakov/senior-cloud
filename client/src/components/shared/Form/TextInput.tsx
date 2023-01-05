@@ -8,7 +8,7 @@ import RequiredStar from './RequiredStar';
 type Props = JSX.IntrinsicElements['input'] &
   ColProps & {
     name: string;
-    label: string;
+    label?: string;
     required?: boolean;
   };
 
@@ -24,6 +24,7 @@ const TextInput: React.FC<Props> = ({
   xxl,
   type,
   autoComplete,
+  placeholder,
   ...props
 }) => {
   return (
@@ -31,15 +32,18 @@ const TextInput: React.FC<Props> = ({
       <Field name={name} {...props}>
         {({ field, meta }: FieldProps) => (
           <Form.Group>
-            <Form.Label>
-              {label}
-              {required ? <RequiredStar /> : null}
-            </Form.Label>
+            {label && (
+              <Form.Label>
+                {label}
+                {required ? <RequiredStar /> : null}
+              </Form.Label>
+            )}
             <Form.Control
               type={type}
               {...field}
               isInvalid={meta.touched && !!meta.error}
               autoComplete={autoComplete}
+              placeholder={placeholder}
             />
             <Form.Text className="text-danger">{meta.touched && meta.error}</Form.Text>
           </Form.Group>

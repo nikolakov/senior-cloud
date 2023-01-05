@@ -11,6 +11,6 @@ export type FileFromApi = {
 export type InitiateUploadResponse = {
   urls: string[];
   partSize: number;
-  UploadId: string;
+  uploadId: string;
   fileId: string;
 };

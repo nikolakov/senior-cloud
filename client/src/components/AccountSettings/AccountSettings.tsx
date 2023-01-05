@@ -8,6 +8,7 @@ import useAuth from 'hooks/useAuth';
 import TextInput from 'components/shared/Form/TextInput';
 import handleError from 'utils/handleError';
 import ManagerSection from './ManagerSection';
+import ManagedBySection from './ManagedBySection';
 
 const validationSchema = Yup.object().shape({
   username: Yup.string().required(),
@@ -108,6 +109,7 @@ const AccountSettings: React.FC = () => {
           </Form>
         )}
       </Formik>
+      <ManagedBySection />
       <ManagerSection />
     </div>
   );
