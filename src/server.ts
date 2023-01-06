@@ -25,6 +25,9 @@ if (process.env.MONGO_URI) {
 
 initializeSpacesConnection();
 
+if (process.env.NODE_ENV === 'production')
+  app.use(express.static(path.join(__dirname, '../client/build')));
+
 app.use(express.json());
 app.use(express.raw());
 app.use(express.urlencoded({ extended: true }));
@@ -37,14 +40,13 @@ app.use(routes);
 const server = http.createServer(app);
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/build/index.html'));
   });
 }
 
 console.log(path.join(__dirname, '../client/build/index.html'));
+console.log(process.env.NODE_ENV);
 
 const PORT = process.env.PORT || 8000;
 
