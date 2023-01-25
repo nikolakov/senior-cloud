@@ -62,6 +62,8 @@ const RegisterForm: React.FC<Props> = ({ callback }) => {
 
           if (errorMessage === 'username_exists') {
             setErrors({ username: errorMessage });
+          } else if (errorMessage === 'email_exists') {
+            setErrors({ email: errorMessage });
           } else {
             setErrors({ password: errorMessage });
           }

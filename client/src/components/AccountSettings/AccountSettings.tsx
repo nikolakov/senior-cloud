@@ -44,7 +44,7 @@ const AccountSettings: React.FC = () => {
               textAlign: 'center',
             }}
           >
-            profile ID: {profileInfo._id}
+            profile ID: {profileInfo.id}
           </h5>
         </Col>
       </Row>
@@ -61,7 +61,7 @@ const AccountSettings: React.FC = () => {
             setSubmitting(false);
           } catch (e: any) {
             const message = handleError(e);
-            if (message === 'username_taken') {
+            if (message === 'username_exists') {
               setErrors({ username: message });
             } else {
               setErrors({ email: message });

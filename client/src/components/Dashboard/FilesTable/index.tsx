@@ -68,12 +68,12 @@ const FileRow: React.FC<RowProps> = ({ file, onChange }) => {
         <div title={file.name}>{file.name}</div>
       </div>
       <div className={classes.DownloadContainer}>
-        <Button size="sm" onClick={() => FilesService.download(file._id)}>
+        <Button size="sm" onClick={() => FilesService.download(file.id)}>
           Download
         </Button>
       </div>
       <div className={classes.MoreOptionsContainer}>
-        <MoreOptionsDropdown fileId={file._id} onDelete={deleteFileHandler} />
+        <MoreOptionsDropdown fileId={file.id} onDelete={deleteFileHandler} />
       </div>
     </div>
   );
@@ -90,7 +90,7 @@ const FilesTable: React.FC<Props> = ({ files, onChange }) => {
       <TableHeader />
       <div className={classes.FilesTable}>
         {files.map(file => (
-          <FileRow key={file._id} file={file} onChange={onChange} />
+          <FileRow key={file.id} file={file} onChange={onChange} />
         ))}
       </div>
     </div>

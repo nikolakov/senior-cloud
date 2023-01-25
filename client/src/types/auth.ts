@@ -7,4 +7,4 @@ export type LoginResponse = {
   // refreshToken: string;
 };
 
-export type EditableUserProfile = Partial<Omit<UserProfile, '_id'>>;
+export type EditableUserProfile = Partial<Omit<UserProfile, 'id'>>;

@@ -1,5 +1,5 @@
 export type FileFromApi = {
-  _id: string;
+  id: string;
   name: string;
   owner: string;
   fileSize: number;

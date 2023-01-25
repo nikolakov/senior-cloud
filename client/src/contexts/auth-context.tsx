@@ -106,7 +106,7 @@ export const AuthContextProvider = ({ children }: any) => {
 
   const updateProfileInfo = async (newProfileInfo: EditableUserProfile) => {
     const res = await AuthService.updateProfileInfo(
-      (profileInfo as UserProfile)._id,
+      (profileInfo as UserProfile).id,
       newProfileInfo
     );
 

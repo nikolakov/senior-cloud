@@ -4,8 +4,8 @@
   "description": "Cloud platform with simple UI and only core functionality",
   "main": "src/server.ts",
   "scripts": {
-    "start": "node ./dist/server.js",
-    "server": "nodemon src/server.ts",
+    "start": "node ./dist/main.js",
+    "server": "nodemon src/main.ts",
     "client": "npm start --prefix ./client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "tsc && npm run build --prefix ./client",

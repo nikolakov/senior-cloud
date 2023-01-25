@@ -79,14 +79,12 @@ export const genPassword = (password: string) => {
 };
 
 /**
- * @param user - The user object.  We need this to set the JWT `sub` payload property to the MongoDB user ID
+ * @param userId - Used to set the JWT `sub` payload property to the user ID
  * @param expiresIn - `Optional` The expiration period of the token in string format, e.g. 2s, 4h or 1d. Defaults to 1d
  */
-export const issueJWT = (user: IUser, expiresIn: string = '1d') => {
-  const _id = user._id;
-
+export const issueJWT = (userId: string, expiresIn: string = '1d') => {
   const payload = {
-    sub: _id,
+    sub: userId,
     iat: Date.now() / 1000,
   };
 
