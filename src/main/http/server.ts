@@ -44,10 +44,10 @@ class Server {
     this.app.use(routes);
 
     if (process.env.NODE_ENV === 'production') {
-      this.app.use(express.static(path.join(__dirname, '../client/build')));
+      this.app.use(express.static(path.join(__dirname, '../../../client/build')));
 
       this.app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../client/build/index.html'));
+        res.sendFile(path.join(__dirname, '../../../client/build/index.html'));
       });
     }
   }
