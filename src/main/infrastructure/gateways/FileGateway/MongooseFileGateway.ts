@@ -84,7 +84,7 @@ class MongooseFileGateway implements FileGateway {
   }
 
   async findAllByOwner(ownerId: string): Promise<File[]> {
-    const fileDocs = await FileModel.find({ owner: ownerId, deletedAt: undefined });
+    const fileDocs = await FileModel.find({ owner: ownerId, uploaded: true, deletedAt: undefined });
     return fileDocs.map(doc => this.convertFromMongooseDocToFile(doc));
   }
 

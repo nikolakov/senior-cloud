@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { FileFromApi, InitiateUploadResponse } from 'types';
 import ApiService from './ApiService';
 
@@ -26,9 +26,9 @@ class FileUploader {
   private file: File;
   private fileName: string;
   private fileType: string;
+  private fileSize: number;
   private onProgress: (fileProgress: number) => void;
 
-  private buffer: ArrayBuffer = new ArrayBuffer(0);
   private urls: string[] = [];
   private partSize: number = 0;
   private uploadId: string = '';
@@ -39,41 +39,21 @@ class FileUploader {
     this.file = file;
     this.fileName = file.name;
     this.fileType = file.type;
+    this.fileSize = file.size;
 
     this.onProgress = onProgress;
   }
 
   async uploadFile() {
-    await this.readFile();
     await this.createUploadJob();
     await this.uploadParts();
     await this.finishUpload();
   }
 
-  private async readFile() {
-    const fileReader = new FileReader();
-
-    this.buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-      fileReader.readAsArrayBuffer(this.file);
-
-      fileReader.onload = async e => {
-        try {
-          if (!e.target?.result || !(e.target.result instanceof ArrayBuffer))
-            throw new Error('Could not read file');
-
-          const buffer = e.target.result;
-          resolve(buffer);
-        } catch (e) {
-          reject(e);
-        }
-      };
-    });
-  }
-
   private async createUploadJob() {
     const res = await ApiService.post<InitiateUploadResponse>(`${endpoint}/initiateUpload`, {
       fileName: this.fileName,
-      fileSize: this.buffer.byteLength,
+      fileSize: this.fileSize,
     });
 
     this.urls = res.data.urls;
@@ -91,19 +71,36 @@ class FileUploader {
     const totalParts = this.getTotalNumberOfParts();
 
     for (let pIndex = 0; pIndex < totalParts; pIndex++) {
-      await this.uploadSinglePart(pIndex, axiosInstance);
+      await this.uploadSinglePartWithoutReadingFile(pIndex, axiosInstance);
       this.updateExternalProgress(pIndex, totalParts);
     }
   }
 
   private getTotalNumberOfParts() {
-    return Math.ceil(this.buffer.byteLength / this.partSize);
+    return Math.ceil(this.fileSize / this.partSize);
   }
 
-  private async uploadSinglePart(pIndex: number, axiosInstance: AxiosInstance) {
-    let part = this.buffer.slice(pIndex * this.partSize, (pIndex + 1) * this.partSize);
+  private async uploadSinglePartWithoutReadingFile(pIndex: number, axiosInstance: AxiosInstance) {
+    const reader = new FileReader();
+    const blob = this.file.slice(pIndex * this.partSize, (pIndex + 1) * this.partSize);
 
-    const res = await axiosInstance.put(this.urls[pIndex], part);
+    reader.readAsArrayBuffer(blob);
+
+    const res = await new Promise<AxiosResponse<any, any>>((resolve, reject) => {
+      reader.onload = async e => {
+        try {
+          if (!e.target?.result || !(e.target.result instanceof ArrayBuffer))
+            throw new Error('Could not read file');
+
+          const part = e.target.result;
+          const res = await axiosInstance.put(this.urls[pIndex], part);
+          resolve(res);
+        } catch (e) {
+          reject(e);
+        }
+      };
+    });
+
     this.etags.push(res.headers.etag);
   }
 
