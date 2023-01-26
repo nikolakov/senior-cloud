@@ -23,7 +23,6 @@ class FinishFileUploadUseCase implements UseCase {
     await this.fileStorage.finishUpload(fuReq);
 
     file.uploaded = true;
-    console.log(file.id);
     await this.fileGateway.update(file);
   }
 }

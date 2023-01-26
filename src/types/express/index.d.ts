@@ -1,9 +1,7 @@
-import { IUser } from '../user';
+import DomainUser from '../../main/domain/entities/User';
 
 declare global {
   namespace Express {
-    interface User extends IUser {
-      _id: string;
-    }
+    interface User extends DomainUser {}
   }
 }

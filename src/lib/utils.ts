@@ -3,8 +3,6 @@ import jsonwebtoken from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
 
-import { IUser } from '../types/user';
-
 const keyPath = path.join(process.cwd(), 'cert', 'private.pem');
 let PRIVATE_KEY: string;
 

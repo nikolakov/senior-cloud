@@ -3,8 +3,8 @@ export type FileBoundaryDTO = {
   name: string;
   owner: string;
   fileSize: number;
-  createdAt: number;
-  modifiedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type FileGatewayDTO = {
@@ -13,8 +13,8 @@ export type FileGatewayDTO = {
   owner: string;
   fileSize: number;
   uploaded: boolean;
-  createdAt: number;
-  modifiedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type FileToGatewayDTO = Omit<FileGatewayDTO, 'id'>;
@@ -26,7 +26,7 @@ class File {
   fileSize: number;
   uploaded: boolean;
   createdAt: Date;
-  modifiedAt: Date;
+  updatedAt: Date;
 
   constructor() {
     this.id = '';
@@ -35,7 +35,7 @@ class File {
     this.fileSize = 0;
     this.uploaded = false;
     this.createdAt = new Date();
-    this.modifiedAt = new Date();
+    this.updatedAt = new Date();
   }
 
   fromGatewayDTO(dto: FileGatewayDTO): void {
@@ -44,8 +44,8 @@ class File {
     this.owner = dto.owner;
     this.fileSize = dto.fileSize;
     this.uploaded = dto.uploaded;
-    this.createdAt = new Date(dto.createdAt);
-    this.modifiedAt = new Date(dto.modifiedAt);
+    this.createdAt = dto.createdAt;
+    this.updatedAt = dto.updatedAt;
   }
 
   toGatewayDTO(): FileToGatewayDTO {
@@ -54,8 +54,8 @@ class File {
       owner: this.owner,
       fileSize: this.fileSize,
       uploaded: this.uploaded,
-      createdAt: this.createdAt.getTime(),
-      modifiedAt: this.modifiedAt.getTime(),
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
     };
   }
 
@@ -65,8 +65,8 @@ class File {
       name: this.name,
       owner: this.owner,
       fileSize: this.fileSize,
-      createdAt: this.createdAt.getTime(),
-      modifiedAt: this.modifiedAt.getTime(),
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
     };
   }
 }

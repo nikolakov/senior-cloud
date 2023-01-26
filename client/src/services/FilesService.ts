@@ -71,7 +71,7 @@ class FileUploader {
     const totalParts = this.getTotalNumberOfParts();
 
     for (let pIndex = 0; pIndex < totalParts; pIndex++) {
-      await this.uploadSinglePartWithoutReadingFile(pIndex, axiosInstance);
+      await this.uploadSinglePart(pIndex, axiosInstance);
       this.updateExternalProgress(pIndex, totalParts);
     }
   }
@@ -80,7 +80,7 @@ class FileUploader {
     return Math.ceil(this.fileSize / this.partSize);
   }
 
-  private async uploadSinglePartWithoutReadingFile(pIndex: number, axiosInstance: AxiosInstance) {
+  private async uploadSinglePart(pIndex: number, axiosInstance: AxiosInstance) {
     const reader = new FileReader();
     const blob = this.file.slice(pIndex * this.partSize, (pIndex + 1) * this.partSize);
 

@@ -1,7 +1,3 @@
-import { IUser } from './user';
-
-type ErrorResponseDTO = { error: string };
-
 export type LoginRequestDTO = {
   username: string;
   password: string;
@@ -14,11 +10,3 @@ export type RegisterRequestDTO = {
   password: string;
   recaptchaToken: string;
 };
-
-export type AuthResponseDTO =
-  | {
-      user: IUser;
-      token: string;
-      expiresIn: string;
-    }
-  | ErrorResponseDTO;
