@@ -11,8 +11,8 @@ export type UserBoundaryDTO = {
   email: string;
   firstName: string;
   lastName: string;
-  createdAt: number;
-  modifiedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   role: Role;
 };
 
@@ -24,8 +24,8 @@ export type UserGatewayDTO = {
   lastName: string;
   hash: string;
   salt: string;
-  createdAt: number;
-  modifiedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
   role: Role;
 };
 
@@ -40,7 +40,7 @@ class User {
   protected hash: string;
   protected salt: string;
   createdAt: Date;
-  modifiedAt: Date;
+  updatedAt: Date;
   protected _role: Role;
 
   constructor() {
@@ -52,7 +52,7 @@ class User {
     this.hash = '';
     this.salt = this.generateSalt();
     this.createdAt = new Date();
-    this.modifiedAt = new Date();
+    this.updatedAt = new Date();
     this._role = Role.User;
   }
 
@@ -93,8 +93,8 @@ class User {
       email: this.email,
       firstName: this.firstName,
       lastName: this.lastName,
-      createdAt: this.createdAt.getTime(),
-      modifiedAt: this.modifiedAt.getTime(),
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
       role: this._role,
     };
   }
@@ -107,8 +107,8 @@ class User {
     this.lastName = dto.lastName;
     this.hash = dto.hash;
     this.salt = dto.salt;
-    this.createdAt = new Date(dto.createdAt);
-    this.modifiedAt = new Date(dto.modifiedAt);
+    this.createdAt = dto.createdAt;
+    this.updatedAt = dto.updatedAt;
     this._role = dto.role;
   }
 
@@ -120,8 +120,8 @@ class User {
       lastName: this.lastName,
       hash: this.hash,
       salt: this.salt,
-      createdAt: this.createdAt.getTime(),
-      modifiedAt: this.modifiedAt.getTime(),
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
       role: this.role,
     };
   }

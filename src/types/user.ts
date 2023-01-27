@@ -14,5 +14,5 @@ export interface User {
 
 export type UpdateUserRequestDTO = Omit<
   User,
-  'hash' | 'salt' | 'createdAt' | 'modifiedAt' | 'deletedAt' | 'role' | 'administratorLevel'
+  'hash' | 'salt' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'role' | 'administratorLevel'
 >;

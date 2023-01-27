@@ -62,7 +62,7 @@ class MongooseFileGateway implements FileGateway {
   }
 
   async findById(id: string): Promise<File | undefined> {
-    const doc = await FileModel.findOne({ _id: id });
+    const doc = await FileModel.findById(id);
 
     return doc ? this.convertFromMongooseDocToFile(doc) : undefined;
   }

@@ -10,29 +10,30 @@ type MongooseUser = {
   lastName: string;
   hash: string;
   salt: string;
-  createdAt: number;
-  modifiedAt: number;
-  deletedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date;
   role: Role;
   gatewayDTO: UserGatewayDTO;
 };
 
-const UserSchema = new Schema({
-  username: String,
-  email: String,
-  firstName: String,
-  lastName: String,
-  hash: String,
-  salt: String,
-  createdAt: Number,
-  modifiedAt: Number,
-  deletedAt: Number,
-  role: {
-    type: String,
-    default: Role.User,
-    enum: Object.values(Role),
+const UserSchema = new Schema(
+  {
+    username: String,
+    email: String,
+    firstName: String,
+    lastName: String,
+    hash: String,
+    salt: String,
+    deletedAt: Date,
+    role: {
+      type: String,
+      default: Role.User,
+      enum: Object.values(Role),
+    },
   },
-});
+  { timestamps: true }
+);
 
 UserSchema.virtual('gatewayDTO').get(function (): UserGatewayDTO {
   return {
@@ -43,10 +44,18 @@ UserSchema.virtual('gatewayDTO').get(function (): UserGatewayDTO {
     lastName: this.lastName as string,
     hash: this.hash as string,
     salt: this.salt as string,
-    createdAt: this.createdAt as number,
-    modifiedAt: this.modifiedAt as number,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt,
     role: this.role,
   };
+});
+
+UserSchema.pre('find', function () {
+  this.where({ deletedAt: undefined });
+});
+
+UserSchema.pre('findOne', function () {
+  this.where({ deletedAt: undefined });
 });
 
 const UserModel = model<MongooseUser>('User', UserSchema);
@@ -60,16 +69,13 @@ class MongooseUserGateway implements UserGateway {
       email: dto.email,
       hash: dto.hash,
       salt: dto.salt,
-      createdAt: Date.now(),
-      modifiedAt: Date.now(),
-      deletedAt: undefined,
     }).save();
 
     return this.convertFromMongooseDocToUser(created);
   }
 
   async findAll(): Promise<User[]> {
-    const userDocs = await UserModel.find({ deletedAt: undefined });
+    const userDocs = await UserModel.find();
     return userDocs.map(userDoc => this.convertFromMongooseDocToUser(userDoc));
   }
 
@@ -79,7 +85,7 @@ class MongooseUserGateway implements UserGateway {
   }
 
   async update(user: User): Promise<User> {
-    const updatedUserDTO = { ...user.toGatewayDTO(), modifiedAt: Date.now() };
+    const updatedUserDTO = user.toGatewayDTO();
 
     const userDoc = await UserModel.findOneAndUpdate({ _id: user.id }, updatedUserDTO, {
       new: true,
@@ -90,10 +96,7 @@ class MongooseUserGateway implements UserGateway {
   }
 
   async delete(id: string): Promise<boolean> {
-    const userDoc = await UserModel.findOneAndUpdate(
-      { _id: id, deletedAt: undefined },
-      { deletedAt: Date.now() }
-    );
+    const userDoc = await UserModel.findOneAndUpdate({ _id: id }, { deletedAt: new Date() });
 
     return userDoc ? true : false;
   }

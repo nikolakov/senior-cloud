@@ -4,8 +4,8 @@ export type FileFromApi = {
   owner: string;
   fileSize: number;
   uploaded: boolean;
-  createdAt: number;
-  modifiedAt: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type InitiateUploadResponse = {
