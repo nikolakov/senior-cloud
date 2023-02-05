@@ -4,11 +4,15 @@ import Nav from 'react-bootstrap/Nav';
 import Button from 'react-bootstrap/Button';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Link, NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import useAuth from 'hooks/useAuth';
 
 const Navbar: React.FC = () => {
   const { isLoggedIn, profileInfo, logout } = useAuth();
+
+  const { t } = useTranslation('public');
+  const { t: tpriv } = useTranslation('private');
 
   return (
     <BSNavbar bg="dark" variant="dark" expand="md">
@@ -22,7 +26,9 @@ const Navbar: React.FC = () => {
             {isLoggedIn ? (
               <NavLink to="/" style={{ textDecoration: 'none' }}>
                 {({ isActive }) => (
-                  <span className={`nav-link${isActive ? ' active' : ''}`}>Home</span>
+                  <span className={`nav-link${isActive ? ' active' : ''}`}>
+                    {tpriv('header.homeLinkText')}
+                  </span>
                 )}
               </NavLink>
             ) : null}
@@ -44,20 +50,20 @@ const Navbar: React.FC = () => {
                   <NavDropdown.ItemText>{profileInfo.username}</NavDropdown.ItemText>
                   <NavDropdown.Divider />
                   <NavDropdown.Item as={Link} to="/account">
-                    Settings
+                    {tpriv('header.accountSettingsLinkText')}
                   </NavDropdown.Item>
                   <NavDropdown.Item
                     as="button"
                     style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}
                     onClick={logout}
                   >
-                    Logout <i className="bi bi-box-arrow-right"></i>
+                    {tpriv('header.logoutLinkText')} <i className="bi bi-box-arrow-right" />
                   </NavDropdown.Item>
                 </NavDropdown>
               </>
             ) : (
               <Link to="/login">
-                <Button>Sign in</Button>
+                <Button>{t('header.signInButtonText')}</Button>
               </Link>
             )}
           </Nav>

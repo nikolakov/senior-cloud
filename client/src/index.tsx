@@ -1,15 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+
+import LoadingOverlay from 'components/shared/UI/LoadingOverlay';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+import './i18n';
+
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <React.Suspense fallback={<LoadingOverlay>Loading translations...</LoadingOverlay>}>
+      <App />
+    </React.Suspense>
   </React.StrictMode>
 );
 

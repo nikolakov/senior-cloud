@@ -1,0 +1,14 @@
+{
+  "user_not_found": "User not found",
+  "incorrect_password": "Incorrect password",
+  "username_exists": "Username exists",
+  "email_exists": "Email exists",
+  "file_not_found": "File not found",
+  "or": "or",
+  "cancel": "cancel",
+  "upload": "upload",
+  "delete": "delete",
+  "download": "download",
+  "close": "close",
+  "save": "save"
+}

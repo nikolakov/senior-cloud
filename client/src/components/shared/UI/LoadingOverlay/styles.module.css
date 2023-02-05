@@ -1,0 +1,16 @@
+.Overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  opacity: 0.2;
+
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.SpinnerContainer {
+  margin-bottom: 2rem;
+}

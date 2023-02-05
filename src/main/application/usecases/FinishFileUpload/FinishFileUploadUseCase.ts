@@ -17,13 +17,21 @@ class FinishFileUploadUseCase implements UseCase {
   async execute(request: Request) {
     const fuReq = <FinishFileUploadRequest>request;
 
-    const file = await this.fileGateway.findById(fuReq.fileId);
+    const file = await this.findFileInDB(fuReq.fileId);
     if (!file) throw new Error('file_not_found');
 
-    await this.fileStorage.finishUpload(fuReq);
+    await this.finishUploadInStorage(fuReq);
 
     file.uploaded = true;
     await this.fileGateway.update(file);
+  }
+
+  private findFileInDB(id: string) {
+    return this.fileGateway.findById(id);
+  }
+
+  private finishUploadInStorage(request: FinishFileUploadRequest) {
+    return this.fileStorage.finishUpload(request);
   }
 }
 

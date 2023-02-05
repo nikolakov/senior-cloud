@@ -2,10 +2,11 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate, Location } from 'react-router-dom';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import { useTranslation } from 'react-i18next';
 
+import useAuth from 'hooks/useAuth';
 import LoginForm from './LoginForm';
 import Card from './Card';
-import useAuth from 'hooks/useAuth';
 
 const LoginPage: React.FC = () => {
   const location = useLocation();
@@ -13,6 +14,8 @@ const LoginPage: React.FC = () => {
 
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
+
+  const { t } = useTranslation('public');
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -23,7 +26,11 @@ const LoginPage: React.FC = () => {
   return (
     <Row className="justify-content-center" style={{ marginTop: '2rem' }}>
       <Col xs={12} sm={10} md={8} lg={6}>
-        <Card title="Sign in" buttonText="Register" buttonHref="/register">
+        <Card
+          title={t('login.formTitle')}
+          buttonText={t('login.registerLinkButtonText')}
+          buttonHref="/register"
+        >
           <LoginForm />
         </Card>
       </Col>

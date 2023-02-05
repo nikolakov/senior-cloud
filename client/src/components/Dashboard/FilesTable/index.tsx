@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
+import { useTranslation } from 'react-i18next';
 
 import { FileFromApi } from 'types';
 import MoreOptionsDropdown from './MoreOptionsDropdown';
@@ -39,17 +40,21 @@ type RowProps = {
 };
 
 const TableHeader: React.FC = () => {
+  const { t } = useTranslation('private');
+
   return (
     <div className={classes.TableHeader}>
       <div className={classes.IconContainer}>#</div>
       <div className={classes.NameContainer}>
-        <div>Name</div>
+        <div>{t('dashboard.fileListNameColumnTitle')}</div>
       </div>
     </div>
   );
 };
 
 const FileRow: React.FC<RowProps> = ({ file, onChange }) => {
+  const { t: tc } = useTranslation('common');
+
   const deleteFileHandler = async (fileId: string) => {
     try {
       await FilesService.delete(fileId);
@@ -69,7 +74,7 @@ const FileRow: React.FC<RowProps> = ({ file, onChange }) => {
       </div>
       <div className={classes.DownloadContainer}>
         <Button size="sm" onClick={() => FilesService.download(file.id)}>
-          Download
+          {tc('download')}
         </Button>
       </div>
       <div className={classes.MoreOptionsContainer}>

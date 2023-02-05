@@ -2,12 +2,13 @@ import { useState, useRef, useEffect } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
+import { useTranslation } from 'react-i18next';
 
 import UploadingModal from './UploadingModal';
-
-import classes from './styles.module.css';
 import handleError from 'utils/handleError';
 import FilesService from 'services/FilesService';
+
+import classes from './styles.module.css';
 
 type Props = {
   onFileUpload: () => void;
@@ -20,6 +21,9 @@ const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
   const [filesUploaded, setFilesUploaded] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { t } = useTranslation('private');
+  const { t: tc } = useTranslation('common');
 
   useEffect(() => {
     if (fileInputRef.current) {
@@ -76,9 +80,9 @@ const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
       <Row>
         <Col xs={12}>
           <div className={classes.FileDropArea}>
-            <h4 className={classes.FileMessage}>Drag and drop files here</h4>
-            <p>or</p>
-            <Button>Choose files</Button>
+            <h4 className={classes.FileMessage}>{t('dashboard.fileInputDragDropText')}</h4>
+            <p>{tc('or')}</p>
+            <Button>{t('dashboard.fileInputButtonText')}</Button>
 
             <input
               className={classes.FileInput}

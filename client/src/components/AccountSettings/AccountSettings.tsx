@@ -3,24 +3,30 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import { useTranslation } from 'react-i18next';
 
+import i18n from 'i18n';
 import useAuth from 'hooks/useAuth';
 import TextInput from 'components/shared/Form/TextInput';
 import handleError from 'utils/handleError';
-import ManagerSection from './ManagerSection';
-import ManagedBySection from './ManagedBySection';
+// import ManagerSection from './ManagerSection';
+// import ManagedBySection from './ManagedBySection';
 
-const validationSchema = Yup.object().shape({
-  username: Yup.string().required(),
-  email: Yup.string().email().required(),
-});
+const getValidationSchema = () =>
+  Yup.object().shape({
+    username: Yup.string().required(i18n.t('private:accountSettings.usernameRequiredErrorText')),
+    email: Yup.string().email().required(i18n.t('private:accountSettings.emailRequiredErrorText')),
+  });
 
 const AccountSettings: React.FC = () => {
   const { profileInfo, updateProfileInfo } = useAuth();
 
+  const { t } = useTranslation('private');
+  const { t: tc } = useTranslation('common');
+
   return (
     <div style={{ margin: 'auto', maxWidth: '768px' }}>
-      <h1>Account Settings</h1>
+      <h1>{t('accountSettings.accountSettingsTitle')}</h1>
       <Row className="justify-content-center">
         <Col
           xs="auto"
@@ -44,7 +50,7 @@ const AccountSettings: React.FC = () => {
               textAlign: 'center',
             }}
           >
-            profile ID: {profileInfo.id}
+            {t('accountSettings.profileIdLabel')} {profileInfo.id}
           </h5>
         </Col>
       </Row>
@@ -62,14 +68,14 @@ const AccountSettings: React.FC = () => {
           } catch (e: any) {
             const message = handleError(e);
             if (message === 'username_exists') {
-              setErrors({ username: message });
+              setErrors({ username: tc(message) });
             } else {
-              setErrors({ email: message });
+              setErrors({ email: tc(message) });
             }
             setSubmitting(false);
           }
         }}
-        validationSchema={validationSchema}
+        validationSchema={getValidationSchema()}
       >
         {({ isSubmitting }) => (
           <Form>
@@ -102,15 +108,15 @@ const AccountSettings: React.FC = () => {
             <Row className="justify-content-between align-items-center">
               <Col xs="auto">
                 <Button type="submit" disabled={isSubmitting} variant="primary">
-                  Save
+                  {tc('save')}
                 </Button>
               </Col>
             </Row>
           </Form>
         )}
       </Formik>
-      <ManagedBySection />
-      <ManagerSection />
+      {/* <ManagedBySection />
+      <ManagerSection /> */}
     </div>
   );
 };

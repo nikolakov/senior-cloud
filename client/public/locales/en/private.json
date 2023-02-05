@@ -1,0 +1,27 @@
+{
+  "header": {
+    "homeLinkText": "Home",
+    "accountSettingsLinkText": "Settings",
+    "logoutLinkText": "Log out"
+  },
+  "dashboard": {
+    "fileInputDragDropText": "Drag and drop files here",
+    "fileInputButtonText": "Choose files",
+    "uploadFilesModalTitle": "Uploading files",
+    "uploadFilesListTitle": "The following file(s) will be uploaded:",
+    "uploadFilesProgressText": "Uploading {{fileNumber}} of {{filesCount}}...",
+    "uploadFilesFailedErrorTitle": "Could not upload files",
+    "uploadFilesSuccessTitle": "Upload complete",
+    "fileListNameColumnTitle": "Name"
+  },
+  "accountSettings": {
+    "accountSettingsTitle": "Account settings",
+    "profileIdLabel": "profileId:",
+    "firstNameFieldLabel": "First Name",
+    "lastNameFieldLabel": "Last Name",
+    "usernameFieldLabel": "Username",
+    "emailFieldLabel": "Email",
+    "usernameRequiredErrorText": "Username is a required field",
+    "emailRequiredErrorText": "Email is a required field"
+  }
+}

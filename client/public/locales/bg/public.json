@@ -1,0 +1,32 @@
+{
+  "header": {
+    "signInButtonText": "Логин"
+  },
+  "login": {
+    "formTitle": "Влизане в акаунт",
+    "registerLinkButtonText": "Регистрирай се",
+    "usernameFieldLabel": "Потребителско име:",
+    "passwordFieldLabel": "Парола:",
+    "loginButtonText": "Влез",
+    "forgotPasswordLinkText": "Забравена парола?",
+    "usernameRequiredErrorText": "Потребителското име е задължително поле",
+    "passwordRequiredErrorText": "Паролата е задължително поле"
+  },
+  "register": {
+    "registerFormTitle": "Регистрация",
+    "signInLinkButtonText": "Логин",
+    "usernameFieldLabel": "Потребителско име",
+    "emailFieldLabel": "Имейл адрес",
+    "passwordFieldLabel": "Парола",
+    "passwordConfirmationFieldLabel": "Повтори паролата",
+    "registerButtonText": "Регистрация",
+    "usernameRequiredErrorText": "Потребителското име е задължително поле",
+    "emailRequiredErrorText": "Имейл адресът е задължително поле",
+    "passwordRequiredErrorText": "Паролата е задължително поле",
+    "passwordConfirmationErrorText": "Паролите не съвпадат"
+  },
+  "errorPages": {
+    "404": "Страницата не беше намерена",
+    "toHomepageLinkText": "Обратно към началната страница"
+  }
+}

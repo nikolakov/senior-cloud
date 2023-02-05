@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { FileFromApi, InitiateUploadResponse } from 'types';
 import ApiService from './ApiService';
 
@@ -45,12 +45,12 @@ class FileUploader {
   }
 
   async uploadFile() {
-    await this.createUploadJob();
+    await this.initiateUpload();
     await this.uploadParts();
     await this.finishUpload();
   }
 
-  private async createUploadJob() {
+  private async initiateUpload() {
     const res = await ApiService.post<InitiateUploadResponse>(`${endpoint}/initiateUpload`, {
       fileName: this.fileName,
       fileSize: this.fileSize,
@@ -64,10 +64,6 @@ class FileUploader {
 
   private async uploadParts() {
     const axiosInstance = axios.create();
-    // investigate if this is necessary and why
-    // https://stackoverflow.com/questions/36301483/what-does-amazon-s3-use-the-content-type-header-for
-    // delete axiosInstance.defaults.headers.put['Content-Type'];
-
     const totalParts = this.getTotalNumberOfParts();
 
     for (let pIndex = 0; pIndex < totalParts; pIndex++) {
@@ -81,27 +77,28 @@ class FileUploader {
   }
 
   private async uploadSinglePart(pIndex: number, axiosInstance: AxiosInstance) {
-    const reader = new FileReader();
-    const blob = this.file.slice(pIndex * this.partSize, (pIndex + 1) * this.partSize);
+    const part = await this.readPart(pIndex);
+    const res = await axiosInstance.put(this.urls[pIndex], part);
 
+    this.etags.push(res.headers.etag);
+  }
+
+  private readPart(pIndex: number): Promise<ArrayBuffer> {
+    const blob = this.file.slice(pIndex * this.partSize, (pIndex + 1) * this.partSize);
+    const reader = new FileReader();
     reader.readAsArrayBuffer(blob);
 
-    const res = await new Promise<AxiosResponse<any, any>>((resolve, reject) => {
+    return new Promise<ArrayBuffer>((resolve, reject) => {
       reader.onload = async e => {
         try {
           if (!e.target?.result || !(e.target.result instanceof ArrayBuffer))
             throw new Error('Could not read file');
-
-          const part = e.target.result;
-          const res = await axiosInstance.put(this.urls[pIndex], part);
-          resolve(res);
+          resolve(e.target.result);
         } catch (e) {
           reject(e);
         }
       };
     });
-
-    this.etags.push(res.headers.etag);
   }
 
   private async updateExternalProgress(pIndex: number, totalParts: number) {
@@ -145,13 +142,5 @@ class FileDownloader {
     document.body.removeChild(link);
   }
 }
-
-// console.time('upload');
-// console.time('read file');
-
-// console.log(this.fileType);
-
-// console.timeEnd('read file');
-// console.timeEnd('upload');
 
 export default FilesService;

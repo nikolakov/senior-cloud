@@ -4,78 +4,79 @@ import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import * as Yup from 'yup';
-import ReCAPTCHA from 'react-google-recaptcha';
+import Reaptcha from 'reaptcha';
+import { useTranslation } from 'react-i18next';
 
+import i18n from 'i18n';
 import TextInput from 'components/shared/Form/TextInput';
 import PasswordInput from 'components/shared/Form/PasswordInput';
 import handleError from 'utils/handleError';
 import useAuth from 'hooks/useAuth';
 
-const validationSchema = Yup.object().shape({
-  username: Yup.string().required(),
-  email: Yup.string().email().required(),
-  password: Yup.string().required(),
-  passwordConfirmation: Yup.string().test(
-    'passwords-match',
-    'Passwords must match',
-    function (value) {
-      return this.parent.password === value;
-    }
-  ),
-});
+const getValidationSchema = () =>
+  Yup.object().shape({
+    username: Yup.string().required(i18n.t('public:register.usernameRequiredErrorText')),
+    email: Yup.string().email().required(i18n.t('public:register.emailRequiredErrorText')),
+    password: Yup.string().required(i18n.t('public:register.passwordRequiredErrorText')),
+    passwordConfirmation: Yup.string().test(
+      'passwords-match',
+      i18n.t('public:register.passwordConfirmationErrorText'),
+      function (value) {
+        return this.parent.password === value;
+      }
+    ),
+  });
 
-type Props = {
-  callback?: () => void;
+(window as any).recaptchaOptions = {
+  removeOnMount: false,
 };
 
-const RegisterForm: React.FC<Props> = ({ callback }) => {
-  const { register } = useAuth();
+type Props = {};
 
-  const captchaRef = useRef<ReCAPTCHA>(null);
+const RegisterForm: React.FC<Props> = () => {
+  const { register } = useAuth();
+  const { t } = useTranslation('public');
+  const { t: tc } = useTranslation('common');
+
+  const captchaRef = useRef<Reaptcha>(null);
+  const tokenRef = useRef<string>('');
 
   return (
     <Formik
       initialValues={{ username: '', email: '', password: '', passwordConfirmation: '' }}
-      validationSchema={validationSchema}
+      validationSchema={getValidationSchema()}
       onSubmit={async (values, { setSubmitting, setErrors }) => {
-        let captchaToken = '';
-
         try {
-          try {
-            if (captchaRef.current) {
-              captchaToken = (await captchaRef.current.executeAsync()) || '';
-            }
+          const token = tokenRef.current;
+          console.log(token);
 
-            if (!captchaToken) {
-              throw new Error();
-            }
-          } catch (e) {
-            throw new Error('captcha_failed');
+          if (!token) {
+            throw new Error('recaptcha_failed');
           }
 
-          await register(values.username, values.email, values.password, captchaToken);
-          setSubmitting(false);
-          callback && callback();
+          await register(values.username, values.email, values.password, token);
         } catch (e: any) {
-          console.log(e);
           const errorMessage = handleError(e);
+          console.log(errorMessage);
 
           if (errorMessage === 'username_exists') {
-            setErrors({ username: errorMessage });
+            setErrors({ username: tc(errorMessage) });
           } else if (errorMessage === 'email_exists') {
-            setErrors({ email: errorMessage });
+            setErrors({ email: tc(errorMessage) });
           } else {
-            setErrors({ password: errorMessage });
+            setErrors({ password: tc(errorMessage) });
           }
+          setSubmitting(false);
+          captchaRef.current?.reset();
         }
       }}
     >
-      {({ isSubmitting }) => (
+      {({ isSubmitting, setSubmitting, submitForm }) => (
         <Form>
           <Row className="gy-3 mb-3">
             <TextInput
               xs={12}
-              label="Username"
+              label={t('register.usernameFieldLabel')}
               type="text"
               name="username"
               autoComplete="username"
@@ -83,7 +84,7 @@ const RegisterForm: React.FC<Props> = ({ callback }) => {
             />
             <TextInput
               xs={12}
-              label="Email"
+              label={t('register.emailFieldLabel')}
               type="text"
               name="email"
               autoComplete="email"
@@ -91,7 +92,7 @@ const RegisterForm: React.FC<Props> = ({ callback }) => {
             />
             <PasswordInput
               xs={12}
-              label="Password"
+              label={t('register.passwordFieldLabel')}
               type="password"
               name="password"
               autoComplete="new-password"
@@ -99,22 +100,34 @@ const RegisterForm: React.FC<Props> = ({ callback }) => {
             />
             <PasswordInput
               xs={12}
-              label="Repeat password"
+              label={t('register.passwordConfirmationFieldLabel')}
               type="password"
               name="passwordConfirmation"
               autoComplete="new-password"
               required
             />
           </Row>
-          <ReCAPTCHA
+          <Reaptcha
             sitekey={process.env.REACT_APP_RECAPTCHA_KEY as string}
             ref={captchaRef}
             size="invisible"
+            onVerify={token => {
+              tokenRef.current = token;
+              submitForm();
+            }}
           />
           <Row className="justify-content-between align-items-center">
             <Col xs="auto">
-              <Button type="submit" disabled={isSubmitting} variant="primary">
-                Register
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                variant="primary"
+                onClick={() => {
+                  captchaRef.current?.execute();
+                  setSubmitting(true);
+                }}
+              >
+                {t('register.registerButtonText')}
               </Button>
             </Col>
           </Row>

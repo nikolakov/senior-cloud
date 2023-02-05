@@ -18,18 +18,10 @@ class InitiateFileUploadUseCase implements UseCase {
     const iuReq = <InitiateUploadRequest>request;
 
     const file = this.createFileFromUploadInitiationData(iuReq);
+    const savedFile = await this.storeFileInDB(file);
+    const { partSize, uploadId, urls } = await this.initiateUploadInStorage(savedFile);
 
-    const savedFile = await this.fileGateway.create(file);
-
-    const res = await this.fileStorage.initiateUpload({
-      fileId: savedFile.id,
-      fileSize: savedFile.fileSize,
-    });
-
-    return {
-      ...res,
-      fileId: savedFile.id,
-    };
+    return { partSize, uploadId, urls, fileId: savedFile.id };
   }
 
   private createFileFromUploadInitiationData(iuReq: InitiateUploadRequest) {
@@ -40,6 +32,17 @@ class InitiateFileUploadUseCase implements UseCase {
     file.owner = iuReq.owner;
 
     return file;
+  }
+
+  private storeFileInDB(file: File) {
+    return this.fileGateway.create(file);
+  }
+
+  private initiateUploadInStorage(file: File) {
+    return this.fileStorage.initiateUpload({
+      fileId: file.id,
+      fileSize: file.fileSize,
+    });
   }
 }
 

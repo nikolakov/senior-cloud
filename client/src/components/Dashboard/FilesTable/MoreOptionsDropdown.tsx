@@ -1,5 +1,6 @@
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
+import { useTranslation } from 'react-i18next';
 
 import classes from './styles.module.css';
 
@@ -18,11 +19,15 @@ type Props = {
 };
 
 const MoreOptionsDropdown: React.FC<Props> = ({ fileId, onDelete }) => {
+  const { t: tc } = useTranslation('common');
+
   return (
     <Dropdown align="end">
       <Dropdown.Toggle as={CustomToggle} id="more-options-dropdown" />
       <Dropdown.Menu>
-        <Dropdown.Item onClick={() => onDelete(fileId)}>Delete</Dropdown.Item>
+        <Dropdown.Item onClick={() => onDelete(fileId)} style={{ textTransform: 'capitalize' }}>
+          {tc('delete')}
+        </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
   );

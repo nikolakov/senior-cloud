@@ -27,13 +27,7 @@ const setAuthRequestInterceptors = () => {
   authRequestInterceptors = axiosApiInstance.interceptors.request.use(config => {
     const { mainToken } = AuthService.getAuthTokens();
     if (mainToken) {
-      if (config.headers) {
-        config.headers.Authorization = formatAuthorizationHeader(mainToken);
-      } else {
-        config.headers = {
-          Authorization: formatAuthorizationHeader(mainToken),
-        };
-      }
+      config.headers.Authorization = formatAuthorizationHeader(mainToken);
     }
 
     return config;

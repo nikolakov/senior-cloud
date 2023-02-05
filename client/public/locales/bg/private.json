@@ -1,0 +1,27 @@
+{
+  "header": {
+    "homeLinkText": "Начало",
+    "accountSettingsLinkText": "Настройки",
+    "logoutLinkText": "Изход"
+  },
+  "dashboard": {
+    "fileInputDragDropText": "Маркирайте и преместете файлове тук за да ги качите",
+    "fileInputButtonText": "Изберете файлове за качване",
+    "uploadFilesModalTitle": "Качване на файлове",
+    "uploadFilesListTitle": "Следният файл/следните файлове ще бъдат качени:",
+    "uploadFilesProgressText": "Качване на {{fileNumber}} от {{filesCount}}...",
+    "uploadFilesFailedErrorTitle": "Качването не беше успешно",
+    "uploadFilesSuccessTitle": "Качването приключи успешно",
+    "fileListNameColumnTitle": "Име на файл"
+  },
+  "accountSettings": {
+    "accountSettingsTitle": "Управление на акаунт",
+    "profileIdLabel": "ID на акаунта:",
+    "firstNameFieldLabel": "Име",
+    "lastNameFieldLabel": "Фамилия",
+    "usernameFieldLabel": "Потребителско име",
+    "emailFieldLabel": "Имейл адрес",
+    "usernameRequiredErrorText": "Потребителското име е задължително поле",
+    "emailRequiredErrorText": "Имейл адресът е задължително поле"
+  }
+}

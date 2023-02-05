@@ -1,0 +1,32 @@
+{
+  "header": {
+    "signInButtonText": "Sign in"
+  },
+  "login": {
+    "formTitle": "Sign in",
+    "registerLinkButtonText": "Register",
+    "usernameFieldLabel": "Your username:",
+    "passwordFieldLabel": "Your password:",
+    "loginButtonText": "Login",
+    "forgotPasswordLinkText": "Forgot password?",
+    "usernameRequiredErrorText": "Username is a required field",
+    "passwordRequiredErrorText": "Password is a required field"
+  },
+  "register": {
+    "registerFormTitle": "Register",
+    "signInLinkButtonText": "Sign in",
+    "usernameFieldLabel": "Username",
+    "emailFieldLabel": "Email",
+    "passwordFieldLabel": "Password",
+    "passwordConfirmationFieldLabel": "Repeat password",
+    "registerButtonText": "Register",
+    "usernameRequiredErrorText": "Username is a required field",
+    "emailRequiredErrorText": "Email is a required field",
+    "passwordRequiredErrorText": "Password is a required field",
+    "passwordConfirmationErrorText": "Passwords must match"
+  },
+  "errorPages": {
+    "404": "404 Page was not found",
+    "toHomepageLinkText": "Return to homepage"
+  }
+}

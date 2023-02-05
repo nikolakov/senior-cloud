@@ -1,6 +1,7 @@
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ProgressBar from 'react-bootstrap/ProgressBar';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   show: boolean;
@@ -10,7 +11,7 @@ type Props = {
   files: FileList | null;
   progress?: number;
   filesUploaded: number;
-  error?: any;
+  error?: string;
 };
 
 const UploadingModal: React.FC<Props> = ({
@@ -23,6 +24,9 @@ const UploadingModal: React.FC<Props> = ({
   filesUploaded,
   error,
 }) => {
+  const { t } = useTranslation('private');
+  const { t: tc } = useTranslation('common');
+
   let fileNames: string[] = [];
 
   if (files) {
@@ -42,7 +46,7 @@ const UploadingModal: React.FC<Props> = ({
       onExited={onExited}
     >
       <Modal.Header>
-        <Modal.Title>Uploading files</Modal.Title>
+        <Modal.Title>{t('dashboard.uploadFilesModalTitle')}</Modal.Title>
       </Modal.Header>
       <Modal.Body
         style={{
@@ -55,7 +59,7 @@ const UploadingModal: React.FC<Props> = ({
       >
         {progress === undefined ? (
           <>
-            <h4>The following file(s) will be uploaded:</h4>
+            <h4>{t('dashboard.uploadFilesListTitle')}</h4>
             {fileNames.map(name => (
               <p key={name}>{name}</p>
             ))}
@@ -63,19 +67,22 @@ const UploadingModal: React.FC<Props> = ({
         ) : progress <= 100 ? (
           <>
             <h4>
-              Uploading {filesUploaded + 1} of {fileNames.length}...
+              {t('dashboard.uploadFilesProgressText', {
+                fileNumber: filesUploaded + 1,
+                filesCount: fileNames.length,
+              })}
             </h4>
             <ProgressBar style={{ width: '100%' }} animated now={progress} label={`${progress}%`} />
           </>
         ) : error ? (
           <>
-            <h4>Could not upload files</h4>
-            <p className="text-danger">{error}</p>
+            <h4>{t('dashboard.uploadFilesErrorTitle')}</h4>
+            <p className="text-danger">{tc(error)}</p>
           </>
         ) : (
           <>
             <i className="bi bi-check2-circle text-success" style={{ fontSize: '3rem' }} />
-            <h4>Upload complete</h4>
+            <h4>{t('dashboard.uploadFilesSuccessTitle')}</h4>
           </>
         )}
       </Modal.Body>
@@ -83,14 +90,14 @@ const UploadingModal: React.FC<Props> = ({
         {!progress ? (
           <>
             <Button variant="outline-danger" onClick={onClose}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button variant="success" onClick={onSubmit}>
-              Upload
+              {tc('upload')}
             </Button>
           </>
         ) : progress <= 100 ? null : (
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose}>{tc('close')}</Button>
         )}
       </Modal.Footer>
     </Modal>
