@@ -3,7 +3,7 @@
     "signInButtonText": "Логин"
   },
   "login": {
-    "formTitle": "Влизане в акаунт",
+    "formTitle": "Вход",
     "registerLinkButtonText": "Регистрирай се",
     "usernameFieldLabel": "Потребителско име:",
     "passwordFieldLabel": "Парола:",

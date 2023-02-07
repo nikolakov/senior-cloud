@@ -6,12 +6,14 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+import { supportedLanguages } from 'i18n';
+
 import useAuth from 'hooks/useAuth';
 
 const Navbar: React.FC = () => {
   const { isLoggedIn, profileInfo, logout } = useAuth();
 
-  const { t } = useTranslation('public');
+  const { t, i18n } = useTranslation('public');
   const { t: tpriv } = useTranslation('private');
 
   return (
@@ -34,12 +36,31 @@ const Navbar: React.FC = () => {
             ) : null}
           </Nav>
           <Nav>
+            <NavDropdown
+              title={
+                <>
+                  <i className="bi bi-translate" />{' '}
+                  <span>
+                    {supportedLanguages.find(lang => lang.code === i18n.resolvedLanguage)?.name}
+                  </span>
+                </>
+              }
+              id="language-dropdown"
+              style={{ textTransform: 'none' }}
+              align="end"
+            >
+              {supportedLanguages.map(lang => (
+                <NavDropdown.Item as="button" onClick={() => i18n.changeLanguage(lang.code)}>
+                  {lang.name}
+                </NavDropdown.Item>
+              ))}
+            </NavDropdown>
             {isLoggedIn ? (
               <>
                 <NavDropdown
                   style={{
                     fontSize: '1.625rem',
-                    marginTop: '-0.375rem',
+                    marginTop: '-0.5rem',
                     marginBottom: '-0.375rem',
                   }}
                   title={<i className="bi bi-person-circle" />}
