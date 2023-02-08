@@ -33,7 +33,6 @@ const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
 
   const filesChangedHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFiles(e.target.files);
-    console.log(e.target.files);
   };
 
   const hasFiles = !!(files && files.length > 0);

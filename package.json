@@ -1,6 +1,6 @@
 {
   "name": "senior-cloud",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Cloud platform with simple UI and only core functionality",
   "main": "src/server.ts",
   "scripts": {

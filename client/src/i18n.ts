@@ -11,37 +11,66 @@ declare module 'i18next' {
   }
 }
 
-i18n
-  .use(initReactI18next)
-  .use(Backend)
-  .use(LanguageDetector)
-  .init({
-    fallbackLng: 'en',
-    debug: true,
-    returnNull: false,
-    interpolation: { escapeValue: false },
-    backend: { loadPath: `/locales/{{lng}}/{{ns}}.json?${packageJson.version}` },
-  });
-
 export enum LanguageCode {
-  BG = 'bg',
-  EN = 'en',
+  bg = 'bg',
+  en = 'en',
 }
 
-type SupportedLanguageType = {
+export type SupportedLanguageType = {
   code: LanguageCode;
   name: string;
 };
 
-export const supportedLanguages: SupportedLanguageType[] = [
-  {
-    code: LanguageCode.BG,
-    name: 'Български',
-  },
-  {
-    code: LanguageCode.EN,
-    name: 'English',
-  },
-];
+class I18nHelper {
+  supportedLanguages: SupportedLanguageType[];
+  fallbackLanguageCode: LanguageCode;
 
-export default i18n;
+  constructor() {
+    this.supportedLanguages = [
+      {
+        code: LanguageCode.bg,
+        name: 'Български',
+      },
+      {
+        code: LanguageCode.en,
+        name: 'English',
+      },
+    ];
+
+    this.fallbackLanguageCode = LanguageCode.bg;
+    (i18n as any).helper = this;
+  }
+
+  init() {
+    i18n
+      .use(initReactI18next)
+      .use(Backend)
+      .use(LanguageDetector)
+      .init({
+        fallbackLng: this.fallbackLanguageCode,
+        debug: process.env.NODE_ENV === 'production' ? false : true,
+        returnNull: false,
+        interpolation: { escapeValue: false },
+        backend: { loadPath: `/locales/{{lng}}/{{ns}}.json?${packageJson.version}` },
+      });
+  }
+
+  getActualLanguage() {
+    const family = i18n.languages[0]?.split('-')[0];
+    const languageCandidate = this.supportedLanguages.find(l => l.code === family);
+    if (languageCandidate) return languageCandidate;
+
+    return this.supportedLanguages.find(
+      l => l.code === this.fallbackLanguageCode
+    ) as SupportedLanguageType;
+  }
+
+  get i18n() {
+    return i18n;
+  }
+}
+
+const i18nHelper = new I18nHelper();
+i18nHelper.init();
+
+export default i18nHelper;

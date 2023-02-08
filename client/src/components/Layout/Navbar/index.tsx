@@ -6,8 +6,7 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import { supportedLanguages } from 'i18n';
-
+import i18nHelper from 'i18n';
 import useAuth from 'hooks/useAuth';
 
 const Navbar: React.FC = () => {
@@ -22,6 +21,28 @@ const Navbar: React.FC = () => {
         <Link to="/" style={{ textDecoration: 'none' }}>
           <BSNavbar.Brand>Senior Cloud</BSNavbar.Brand>
         </Link>
+        <Nav>
+          <NavDropdown
+            title={
+              <>
+                <i className="bi bi-translate" /> <span>{i18nHelper.getActualLanguage().name}</span>
+              </>
+            }
+            id="language-dropdown"
+            style={{ textTransform: 'none' }}
+            align="end"
+          >
+            {i18nHelper.supportedLanguages.map(lang => (
+              <NavDropdown.Item
+                as="button"
+                onClick={() => i18n.changeLanguage(lang.code)}
+                key={lang.code}
+              >
+                {lang.name}
+              </NavDropdown.Item>
+            ))}
+          </NavDropdown>
+        </Nav>
         <BSNavbar.Toggle aria-controls="responsive-navbar-nav" />
         <BSNavbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
@@ -36,25 +57,6 @@ const Navbar: React.FC = () => {
             ) : null}
           </Nav>
           <Nav>
-            <NavDropdown
-              title={
-                <>
-                  <i className="bi bi-translate" />{' '}
-                  <span>
-                    {supportedLanguages.find(lang => lang.code === i18n.resolvedLanguage)?.name}
-                  </span>
-                </>
-              }
-              id="language-dropdown"
-              style={{ textTransform: 'none' }}
-              align="end"
-            >
-              {supportedLanguages.map(lang => (
-                <NavDropdown.Item as="button" onClick={() => i18n.changeLanguage(lang.code)}>
-                  {lang.name}
-                </NavDropdown.Item>
-              ))}
-            </NavDropdown>
             {isLoggedIn ? (
               <>
                 <NavDropdown

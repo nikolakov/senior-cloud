@@ -5,12 +5,12 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useTranslation } from 'react-i18next';
 
-import i18n from 'i18n';
+import i18nHelper from 'i18n';
 import useAuth from 'hooks/useAuth';
 import TextInput from 'components/shared/Form/TextInput';
 import handleError from 'utils/handleError';
-// import ManagerSection from './ManagerSection';
-// import ManagedBySection from './ManagedBySection';
+
+const i18n = i18nHelper.i18n;
 
 const getValidationSchema = () =>
   Yup.object().shape({
@@ -115,8 +115,6 @@ const AccountSettings: React.FC = () => {
           </Form>
         )}
       </Formik>
-      {/* <ManagedBySection />
-      <ManagerSection /> */}
     </div>
   );
 };

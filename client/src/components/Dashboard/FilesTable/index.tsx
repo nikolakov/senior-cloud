@@ -7,6 +7,7 @@ import MoreOptionsDropdown from './MoreOptionsDropdown';
 
 import classes from './styles.module.css';
 import FilesService from 'services/FilesService';
+import handleError from 'utils/handleError';
 
 // ToDo:
 // EVERYTHING in this file requires a lot of rework and optimization
@@ -60,7 +61,7 @@ const FileRow: React.FC<RowProps> = ({ file, onChange }) => {
       await FilesService.delete(fileId);
       onChange();
     } catch (e: any) {
-      console.log(e.message);
+      handleError(e);
     }
   };
 

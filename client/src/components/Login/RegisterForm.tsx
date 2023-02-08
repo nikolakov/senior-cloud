@@ -7,11 +7,13 @@ import * as Yup from 'yup';
 import Reaptcha from 'reaptcha';
 import { useTranslation } from 'react-i18next';
 
-import i18n from 'i18n';
+import i18nHelper from 'i18n';
 import TextInput from 'components/shared/Form/TextInput';
 import PasswordInput from 'components/shared/Form/PasswordInput';
 import handleError from 'utils/handleError';
 import useAuth from 'hooks/useAuth';
+
+const i18n = i18nHelper.i18n;
 
 const getValidationSchema = () =>
   Yup.object().shape({
@@ -48,7 +50,6 @@ const RegisterForm: React.FC<Props> = () => {
       onSubmit={async (values, { setSubmitting, setErrors }) => {
         try {
           const token = tokenRef.current;
-          console.log(token);
 
           if (!token) {
             throw new Error('recaptcha_failed');
@@ -57,7 +58,6 @@ const RegisterForm: React.FC<Props> = () => {
           await register(values.username, values.email, values.password, token);
         } catch (e: any) {
           const errorMessage = handleError(e);
-          console.log(errorMessage);
 
           if (errorMessage === 'username_exists') {
             setErrors({ username: tc(errorMessage) });
