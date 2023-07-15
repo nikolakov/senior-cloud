@@ -15,11 +15,9 @@ class LoginUserUseCase implements UseCase {
     const luReq = <LoginUserRequest>request;
 
     const user = await this.userGateway.findByUsername(luReq.username);
-
     if (!user) throw new Error('user_not_found');
 
     const passwordIsCorrect = await user.comparePassword(luReq.password);
-
     if (!passwordIsCorrect) throw new Error('incorrect_password');
 
     return user.toBoundaryDTO();

@@ -24,7 +24,7 @@ export type AuthContextType = {
 export const AuthContext = React.createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthContextProvider = ({ children }: any) => {
-  const [token, setToken] = useState<string | null>(AuthService.getAuthTokens().mainToken);
+  const [token, setToken] = useState<string | null>(AuthService.getAuthTokens().accessToken);
   const [profileInfo, setProfileInfo] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -84,10 +84,10 @@ export const AuthContextProvider = ({ children }: any) => {
   // }, [profileInfo, i18n]);
 
   const login = async (username: string, password: string) => {
-    const { token, user } = await AuthService.login(username, password);
+    const { accessToken, user } = await AuthService.login(username, password);
     // setLoading(true);
     setProfileInfo(user);
-    setToken(token);
+    setToken(accessToken);
   };
 
   const register = async (
@@ -96,10 +96,15 @@ export const AuthContextProvider = ({ children }: any) => {
     password: string,
     recaptchaToken: string
   ) => {
-    const { token, user } = await AuthService.register(username, email, password, recaptchaToken);
+    const { accessToken, user } = await AuthService.register(
+      username,
+      email,
+      password,
+      recaptchaToken
+    );
 
     setProfileInfo(user);
-    setToken(token);
+    setToken(accessToken);
   };
 
   const isLoggedIn = !!(token && profileInfo);

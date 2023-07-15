@@ -10,6 +10,8 @@ interface FileGateway {
   delete(id: string): Promise<boolean>;
 
   findAllByOwner(ownerId: string): Promise<File[]>;
+
+  findAllInFolder(folderId: string): Promise<File[]>;
 }
 
 export default FileGateway;

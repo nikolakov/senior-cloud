@@ -21,23 +21,26 @@ export type SupportedLanguageType = {
   name: string;
 };
 
+const supportedLanguages = [
+  {
+    code: LanguageCode.bg,
+    name: 'Български',
+  },
+  {
+    code: LanguageCode.en,
+    name: 'English',
+  },
+];
+
+const fallbackLanguageCode = LanguageCode.bg;
+
 class I18nHelper {
   supportedLanguages: SupportedLanguageType[];
   fallbackLanguageCode: LanguageCode;
 
-  constructor() {
-    this.supportedLanguages = [
-      {
-        code: LanguageCode.bg,
-        name: 'Български',
-      },
-      {
-        code: LanguageCode.en,
-        name: 'English',
-      },
-    ];
-
-    this.fallbackLanguageCode = LanguageCode.bg;
+  constructor(supportedLanguages: SupportedLanguageType[], fallbackLanguageCode: LanguageCode) {
+    this.supportedLanguages = supportedLanguages;
+    this.fallbackLanguageCode = fallbackLanguageCode;
     (i18n as any).helper = this;
   }
 
@@ -56,10 +59,18 @@ class I18nHelper {
   }
 
   getActualLanguage() {
-    const family = i18n.languages[0]?.split('-')[0];
-    const languageCandidate = this.supportedLanguages.find(l => l.code === family);
-    if (languageCandidate) return languageCandidate;
+    const languageCode = this.getLanguageCodeFromLocale(i18n.languages[0]);
+    const language = this.findLanguageInSupported(languageCode);
+    if (language) return language;
 
+    return this.fallbackLanguage;
+  }
+
+  findLanguageInSupported(languageCode: string) {
+    return this.supportedLanguages.find(l => l.code === languageCode);
+  }
+
+  get fallbackLanguage() {
     return this.supportedLanguages.find(
       l => l.code === this.fallbackLanguageCode
     ) as SupportedLanguageType;
@@ -68,9 +79,13 @@ class I18nHelper {
   get i18n() {
     return i18n;
   }
+
+  private getLanguageCodeFromLocale(language: string) {
+    return language.split('-')[0];
+  }
 }
 
-const i18nHelper = new I18nHelper();
+const i18nHelper = new I18nHelper(supportedLanguages, fallbackLanguageCode);
 i18nHelper.init();
 
 export default i18nHelper;

@@ -6,6 +6,7 @@ import FileGateway from './FileGateway';
 type MongooseFile = {
   name: string;
   owner: Types.ObjectId;
+  folder: Types.ObjectId;
   fileSize: number;
   uploaded: boolean;
   createdAt: Date;
@@ -18,6 +19,7 @@ const FileSchema = new Schema(
   {
     name: String,
     owner: Schema.Types.ObjectId,
+    folder: Schema.Types.ObjectId,
     fileSize: Number,
     uploaded: { type: Boolean, default: false },
     deletedAt: Date,
@@ -30,6 +32,7 @@ FileSchema.virtual('gatewayDTO').get(function (): FileGatewayDTO {
     id: this.id,
     name: this.name as string,
     owner: (this.owner as Types.ObjectId).toString(),
+    folder: (this.folder as Types.ObjectId).toString(),
     fileSize: this.fileSize as number,
     uploaded: this.uploaded as boolean,
     createdAt: this.createdAt,
@@ -84,6 +87,11 @@ class MongooseFileGateway implements FileGateway {
 
   async findAllByOwner(ownerId: string): Promise<File[]> {
     const fileDocs = await FileModel.find({ owner: ownerId, uploaded: true });
+    return fileDocs.map(doc => this.convertFromMongooseDocToFile(doc));
+  }
+
+  async findAllInFolder(folderId: string): Promise<File[]> {
+    const fileDocs = await FileModel.find({ folder: folderId, uploaded: true });
     return fileDocs.map(doc => this.convertFromMongooseDocToFile(doc));
   }
 

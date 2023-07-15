@@ -2,6 +2,8 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
+import { FileProgress } from 'services/FilesService';
 
 type Props = {
   show: boolean;
@@ -9,9 +11,8 @@ type Props = {
   onSubmit: () => void;
   onExited: () => void;
   files: FileList | null;
-  progress?: number;
-  filesUploaded: number;
   error?: string;
+  filesProgress: FileProgress[];
 };
 
 const UploadingModal: React.FC<Props> = ({
@@ -20,22 +21,31 @@ const UploadingModal: React.FC<Props> = ({
   onSubmit,
   onExited,
   files,
-  progress,
-  filesUploaded,
+  filesProgress,
   error,
 }) => {
   const { t } = useTranslation('private');
   const { t: tc } = useTranslation('common');
 
-  let fileNames: string[] = [];
+  const fileNames = useMemo(() => {
+    if (!files) return [];
 
-  if (files) {
+    let res: string[] = [];
     for (let i = 0; i < files.length; i++) {
-      fileNames[i] = files[i].name;
+      res[i] = files[i].name;
     }
-  }
+    return res;
+  }, [files]);
 
-  const uploading = progress !== undefined && progress <= 100;
+  const isNotStartedUploading = filesProgress.length === 0;
+  const uploading = filesProgress.filter(p => p.uploaded < p.totalParts).length > 0;
+
+  let progress = 0;
+  filesProgress.forEach((p, i, arr) => {
+    progress += (100 * (p.uploaded / p.totalParts)) / arr.length;
+  });
+
+  const filesUploaded = filesProgress.filter(p => p.uploaded === p.totalParts).length;
 
   return (
     <Modal
@@ -57,14 +67,14 @@ const UploadingModal: React.FC<Props> = ({
           justifyContent: 'center',
         }}
       >
-        {progress === undefined ? (
+        {isNotStartedUploading ? (
           <>
-            <h4>{t('dashboard.uploadFilesListTitle')}</h4>
+            <h4>{t('dashboard.uploadFilesListTitle', { count: fileNames.length })}</h4>
             {fileNames.map(name => (
               <p key={name}>{name}</p>
             ))}
           </>
-        ) : progress <= 100 ? (
+        ) : uploading ? (
           <>
             <h4>
               {t('dashboard.uploadFilesProgressText', {
@@ -72,7 +82,12 @@ const UploadingModal: React.FC<Props> = ({
                 filesCount: fileNames.length,
               })}
             </h4>
-            <ProgressBar style={{ width: '100%' }} animated now={progress} label={`${progress}%`} />
+            <ProgressBar
+              style={{ width: '100%' }}
+              animated
+              now={progress}
+              label={`${progress.toFixed(0)}%`}
+            />
           </>
         ) : error ? (
           <>
@@ -87,7 +102,7 @@ const UploadingModal: React.FC<Props> = ({
         )}
       </Modal.Body>
       <Modal.Footer>
-        {!progress ? (
+        {isNotStartedUploading ? (
           <>
             <Button variant="outline-danger" onClick={onClose}>
               {tc('cancel')}
@@ -96,7 +111,7 @@ const UploadingModal: React.FC<Props> = ({
               {tc('upload')}
             </Button>
           </>
-        ) : progress <= 100 ? null : (
+        ) : uploading ? null : (
           <Button onClick={onClose}>{tc('close')}</Button>
         )}
       </Modal.Footer>

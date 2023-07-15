@@ -2,6 +2,7 @@ export type FileBoundaryDTO = {
   id: string;
   name: string;
   owner: string;
+  folder: string;
   fileSize: number;
   createdAt: Date;
   updatedAt: Date;
@@ -11,6 +12,7 @@ export type FileGatewayDTO = {
   id: string;
   name: string;
   owner: string;
+  folder: string;
   fileSize: number;
   uploaded: boolean;
   createdAt: Date;
@@ -23,6 +25,7 @@ class File {
   id: string;
   name: string;
   owner: string;
+  folder: string;
   fileSize: number;
   uploaded: boolean;
   createdAt: Date;
@@ -32,6 +35,7 @@ class File {
     this.id = '';
     this.name = '';
     this.owner = '';
+    this.folder = '';
     this.fileSize = 0;
     this.uploaded = false;
     this.createdAt = new Date();
@@ -42,6 +46,7 @@ class File {
     this.id = dto.id;
     this.name = dto.name;
     this.owner = dto.owner;
+    this.folder = dto.folder;
     this.fileSize = dto.fileSize;
     this.uploaded = dto.uploaded;
     this.createdAt = dto.createdAt;
@@ -52,6 +57,7 @@ class File {
     return {
       name: this.name,
       owner: this.owner,
+      folder: this.folder,
       fileSize: this.fileSize,
       uploaded: this.uploaded,
       createdAt: this.createdAt,
@@ -64,6 +70,7 @@ class File {
       id: this.id,
       name: this.name,
       owner: this.owner,
+      folder: this.folder,
       fileSize: this.fileSize,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
