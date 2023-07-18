@@ -102,3 +102,5 @@ class MongooseFolderGateway implements FolderGateway {
     return folder;
   }
 }
+
+export default MongooseFolderGateway;

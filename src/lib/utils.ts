@@ -18,6 +18,10 @@ if (
   throw new Error('Missing RSA key pairs');
 }
 
+if (!process.env.ACCESS_TOKEN_EXP || !process.env.REFRESH_TOKEN_EXP) {
+  throw new Error('Missing token expiration time');
+}
+
 export const config = {
   accessTokenPublicKey: decodeBase64Key(process.env.ACCESS_TOKEN_PUBLIC_KEY),
   accessTokenPrivateKey: decodeBase64Key(process.env.ACCESS_TOKEN_PRIVATE_KEY),

@@ -3,12 +3,12 @@ import passport from 'passport';
 
 import { UpdateUserRequestDTO } from 'types/user';
 
-import MongooseUsergateway from '../../../infrastructure/gateways/UserGateway/MongooseUserGateway';
+import MongooseUserGateway from '../../../infrastructure/gateways/UserGateway/MongooseUserGateway';
 import UpdateUserUseCase from '../../../application/usecases/UpdateUser/UpdateUserUseCase';
 
 const router = Router();
 
-const userGateway = new MongooseUsergateway();
+const userGateway = new MongooseUserGateway();
 
 router.patch<{ userId: string }, any, UpdateUserRequestDTO>(
   '/:userId',

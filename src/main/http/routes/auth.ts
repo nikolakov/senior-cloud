@@ -5,10 +5,12 @@ import * as utils from '../../../lib/utils';
 import { LoginRequestDTO, RegisterRequestDTO } from 'types/auth';
 
 import MongooseUserGateway from '../../infrastructure/gateways/UserGateway/MongooseUserGateway';
+import MongooseFolderGateway from '../../infrastructure/gateways/FolderGateway/MongooseFolderGateway';
 import RegisterUserUseCase from '../../application/usecases/RegisterUser/RegisterUserUseCase';
 import LoginUserUseCase from '../../application/usecases/LoginUser/LoginUserUseCase';
 
 const userGateway = new MongooseUserGateway();
+const folderGateway = new MongooseFolderGateway();
 
 const validateCaptcha = async (token: string) => {
   try {
@@ -22,6 +24,21 @@ const validateCaptcha = async (token: string) => {
   }
 };
 
+const getTokenPair = (userId: string) => {
+  const { token: accessToken, expiresIn } = utils.issueJWT(
+    userId,
+    'accessTokenPrivateKey',
+    process.env.ACCESS_TOKEN_EXP
+  );
+  const { token: refreshToken } = utils.issueJWT(
+    userId,
+    'refreshTokenPrivateKey',
+    process.env.REFRESH_TOKEN_EXP
+  );
+
+  return { accessToken, refreshToken, expiresIn };
+};
+
 const router = Router();
 
 router.post<{}, any, LoginRequestDTO>('/login', async (req, res, next) => {
@@ -29,12 +46,7 @@ router.post<{}, any, LoginRequestDTO>('/login', async (req, res, next) => {
     const { username, password } = req.body;
     const user = await new LoginUserUseCase(userGateway).execute({ username, password });
 
-    const { token: accessToken, expiresIn } = utils.issueJWT(
-      user.id,
-      'accessTokenPrivateKey',
-      '10m'
-    );
-    const { token: refreshToken } = utils.issueJWT(user.id, 'refreshTokenPrivateKey', '1h');
+    const { accessToken, refreshToken, expiresIn } = getTokenPair(user.id);
 
     res.json({ user, accessToken, refreshToken, expiresIn });
   } catch (e: any) {
@@ -50,14 +62,13 @@ router.post<{}, any, RegisterRequestDTO>('/register', async (req, res, next) => 
   if (!captchaIsValid) return res.status(401).send({ error: 'recaptcha_failed' });
 
   try {
-    const user = await new RegisterUserUseCase(userGateway).execute({ username, email, password });
+    const user = await new RegisterUserUseCase(userGateway, folderGateway).execute({
+      username,
+      email,
+      password,
+    });
 
-    const { token: accessToken, expiresIn } = utils.issueJWT(
-      user.id,
-      'accessTokenPrivateKey',
-      '10m'
-    );
-    const { token: refreshToken } = utils.issueJWT(user.id, 'refreshTokenPrivateKey', '1h');
+    const { accessToken, refreshToken, expiresIn } = getTokenPair(user.id);
 
     res.json({ user, accessToken, refreshToken, expiresIn });
   } catch (e: any) {
@@ -85,8 +96,7 @@ router.post<{}, any, { refreshToken: string }>('/refresh-token', async (req, res
     return res.status(401).send();
   }
 
-  const { token: accessToken } = utils.issueJWT(user.id, 'accessTokenPrivateKey', '10m');
-  const { token: refreshToken } = utils.issueJWT(user.id, 'refreshTokenPrivateKey', '1h');
+  const { accessToken, refreshToken } = getTokenPair(user.id);
 
   return res.send({ accessToken, refreshToken });
 });
