@@ -9,6 +9,7 @@ import DownloadFileUseCase from '../../../application/usecases/DownloadFile/Down
 import DeleteFileUseCase from '../../../application/usecases/DeleteFile/DeleteFileUseCase';
 import S3FileStorage from '../../../infrastructure/FileStorage/S3FileStorage';
 import MongooseFileGateway from '../../../infrastructure/gateways/FileGateway/MongooseFileGateway';
+import GetFolderFilesUseCase from '../../../application/usecases/GetFolderFiles/GetFolderFilesUseCase';
 
 type ErrorResponseDTO = { error: string };
 type InitiateUploadRequestDTO = {
@@ -81,6 +82,22 @@ router.get('/', passport.authenticate('jwt', { session: false }), async (req, re
     res.status(400).send({ error: e.message });
   }
 });
+
+router.get(
+  '/:folderId',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res, next) => {
+    try {
+      const files = await new GetFolderFilesUseCase(fileGateway).execute({
+        folderId: req.params.folderId,
+      });
+
+      res.send(files);
+    } catch (e: any) {
+      res.status(400).send({ error: e.message });
+    }
+  }
+);
 
 router.get<{ fileId: string }, DownloadFileResponseDTO>(
   '/:fileId/download',
