@@ -3,6 +3,7 @@ import { AxiosError } from 'axios';
 export * from './user';
 export * from './auth';
 export * from './file';
+export * from './folder';
 
 // type guards
 

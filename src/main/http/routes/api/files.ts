@@ -4,17 +4,16 @@ import passport from 'passport';
 import InitiateFileUploadUseCase from '../../../application/usecases/InitiateFileUpload/InitiateFileUploadUseCase';
 import FinishFileUploadUseCase from '../../../application/usecases/FinishFileUpload/FinishFileUploadUseCase';
 import AbortUnfinishedUploadsUseCase from '../../../application/usecases/AbortUnfinishedUploads/AbortUnfinishedUploadsUseCase';
-import GetUserFilesUseCase from '../../../application/usecases/GetUserFiles/GetUserFilesUseCase';
 import DownloadFileUseCase from '../../../application/usecases/DownloadFile/DownloadFileUseCase';
 import DeleteFileUseCase from '../../../application/usecases/DeleteFile/DeleteFileUseCase';
 import S3FileStorage from '../../../infrastructure/FileStorage/S3FileStorage';
 import MongooseFileGateway from '../../../infrastructure/gateways/FileGateway/MongooseFileGateway';
-import GetFolderFilesUseCase from '../../../application/usecases/GetFolderFiles/GetFolderFilesUseCase';
 
 type ErrorResponseDTO = { error: string };
 type InitiateUploadRequestDTO = {
   fileSize: number;
   fileName: string;
+  folderId: string;
 };
 type InitiateUploadResponseDTO =
   | {
@@ -45,6 +44,7 @@ router.post<{}, InitiateUploadResponseDTO, InitiateUploadRequestDTO>(
         fileName: req.body.fileName,
         fileSize: req.body.fileSize,
         owner: req.user?.id as string,
+        folderId: req.body.folderId,
       });
 
       res.send(uploadInfo);
@@ -65,34 +65,6 @@ router.post<{}, FinishUploadResponseDTO, FinishUploadRequestDTO>(
         uploadId: req.body.uploadId,
       });
       res.status(204).end();
-    } catch (e: any) {
-      res.status(400).send({ error: e.message });
-    }
-  }
-);
-
-router.get('/', passport.authenticate('jwt', { session: false }), async (req, res, next) => {
-  try {
-    const files = await new GetUserFilesUseCase(fileGateway).execute({
-      ownerId: req.user?.id as string,
-    });
-
-    res.send(files);
-  } catch (e: any) {
-    res.status(400).send({ error: e.message });
-  }
-});
-
-router.get(
-  '/:folderId',
-  passport.authenticate('jwt', { session: false }),
-  async (req, res, next) => {
-    try {
-      const files = await new GetFolderFilesUseCase(fileGateway).execute({
-        folderId: req.params.folderId,
-      });
-
-      res.send(files);
     } catch (e: any) {
       res.status(400).send({ error: e.message });
     }

@@ -1,4 +1,4 @@
-import { Folder } from './folder';
+import { FolderFromApi } from './folder';
 
 export type UserId = string;
 
@@ -15,5 +15,5 @@ export type UserProfile = {
   email: string;
   role: Role;
   managedBy?: UserId;
-  rootFolder: Folder;
+  rootFolder: FolderFromApi;
 };

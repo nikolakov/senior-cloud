@@ -1,4 +1,4 @@
-export type Folder = {
+export type FolderFromApi = {
   id: string;
   name: string;
   owner: string;

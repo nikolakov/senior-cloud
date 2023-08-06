@@ -12,9 +12,10 @@ import classes from './styles.module.css';
 
 type Props = {
   onFileUpload: () => void;
+  folderId: string;
 };
 
-const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
+const UploadInput: React.FC<Props> = ({ onFileUpload, folderId }) => {
   const [files, setFiles] = useState<FileList | null>(null);
   const [filesProgress, setFilesProgress] = useState<FileProgress[]>([]);
   const [uploadError, setUploadError] = useState('');
@@ -43,7 +44,7 @@ const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
 
         for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
           const file = files[fileIndex];
-          await FilesService.uploadFile(file, totalParts => {
+          await FilesService.uploadFile(file, folderId, totalParts => {
             setFilesProgress(prevProgress => {
               const newProgress = [...prevProgress];
               const newFileProgress = { totalParts, uploaded: newProgress[fileIndex].uploaded + 1 };

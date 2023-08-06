@@ -10,8 +10,8 @@ export type FileProgress = {
 };
 
 class FilesService {
-  static async uploadFile(file: File, onProgress: (totalParts: number) => void) {
-    await new FileUploader(file, onProgress).uploadFile();
+  static async uploadFile(file: File, folderId: string, onProgress: (totalParts: number) => void) {
+    await new FileUploader(file, onProgress).uploadFile(folderId);
   }
 
   static getFiles() {
@@ -50,18 +50,19 @@ class FileUploader {
     this.onProgress = onProgress;
   }
 
-  async uploadFile() {
-    await this.initiateUpload();
+  async uploadFile(folderId: string) {
+    await this.initiateUpload(folderId);
     console.time('upload time');
     await this.uploadPartsSync();
     console.timeEnd('upload time');
     await this.finishUpload();
   }
 
-  private async initiateUpload() {
+  private async initiateUpload(folderId: string) {
     const res = await ApiService.post<InitiateUploadResponse>(`${endpoint}/initiateUpload`, {
       fileName: this.fileName,
       fileSize: this.fileSize,
+      folderId,
     });
 
     this.urls = res.data.urls;

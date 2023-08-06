@@ -3,6 +3,7 @@ import passport from 'passport';
 
 import files from './files';
 import users from './users';
+import folders from './folders';
 import MongooseFolderGateway from '../../../infrastructure/gateways/FolderGateway/MongooseFolderGateway';
 import GetRootFolderUseCase from '../../..//application/usecases/GetRootFolder/GetRootFolderUseCase';
 
@@ -34,5 +35,6 @@ router.get('/profileInfo', passport.authenticate('jwt', { session: false }), asy
 
 router.use('/files', files);
 router.use('/users', users);
+router.use('/folders', folders);
 
 export default router;

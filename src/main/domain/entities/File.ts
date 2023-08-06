@@ -19,7 +19,7 @@ export type FileGatewayDTO = {
   updatedAt: Date;
 };
 
-type FileToGatewayDTO = Omit<FileGatewayDTO, 'id'>;
+type FileToGatewayDTO = Omit<FileGatewayDTO, 'id' | 'createdAt' | 'updatedAt'>;
 
 class File {
   id: string;
@@ -60,8 +60,6 @@ class File {
       folder: this.folder,
       fileSize: this.fileSize,
       uploaded: this.uploaded,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
     };
   }
 

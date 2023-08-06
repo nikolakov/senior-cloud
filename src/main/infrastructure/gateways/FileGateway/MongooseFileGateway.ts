@@ -52,14 +52,7 @@ export const FileModel = model<MongooseFile>('File', FileSchema);
 
 class MongooseFileGateway implements FileGateway {
   async create(file: File): Promise<File> {
-    const dto = file.toGatewayDTO();
-
-    const created = await new FileModel({
-      name: dto.name,
-      owner: dto.owner,
-      fileSize: dto.fileSize,
-      uploaded: dto.uploaded,
-    }).save();
+    const created = await new FileModel(file.toGatewayDTO()).save();
 
     return this.convertFromMongooseDocToFile(created);
   }
