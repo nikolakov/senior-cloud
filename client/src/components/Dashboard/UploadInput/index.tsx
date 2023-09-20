@@ -6,19 +6,19 @@ import { useTranslation } from 'react-i18next';
 
 import UploadingModal from './UploadingModal';
 import handleError from 'utils/handleError';
-import FilesService from 'services/FilesService';
+import FilesService, { FileProgress } from 'services/FilesService';
 
 import classes from './styles.module.css';
 
 type Props = {
   onFileUpload: () => void;
+  folderId: string;
 };
 
-const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
+const UploadInput: React.FC<Props> = ({ onFileUpload, folderId }) => {
   const [files, setFiles] = useState<FileList | null>(null);
-  const [progress, setProgress] = useState<number>();
+  const [filesProgress, setFilesProgress] = useState<FileProgress[]>([]);
   const [uploadError, setUploadError] = useState('');
-  const [filesUploaded, setFilesUploaded] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,40 +38,34 @@ const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
   const hasFiles = !!(files && files.length > 0);
 
   const uploadHandler = async () => {
-    if (files) {
+    if (hasFiles) {
       try {
-        setProgress(1);
-        let count = 0;
+        setFilesProgress(new Array(files.length).fill({ totalParts: 1, uploaded: 0 }));
 
         for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
           const file = files[fileIndex];
-          // eslint-disable-next-line no-loop-func
-          await FilesService.uploadFile(file, fileProgress => {
-            setProgress(Math.ceil(1 + ((count + fileProgress) / files.length) * 100));
-            setFilesUploaded(count);
+          await FilesService.uploadFile(file, folderId, totalParts => {
+            setFilesProgress(prevProgress => {
+              const newProgress = [...prevProgress];
+              const newFileProgress = { totalParts, uploaded: newProgress[fileIndex].uploaded + 1 };
+              newProgress[fileIndex] = newFileProgress;
+              return newProgress;
+            });
           });
 
           onFileUpload();
-          count += 1;
         }
-
-        setProgress(101);
       } catch (e: any) {
         setUploadError(handleError(e));
-
-        setProgress(101);
+        setFilesProgress([]);
       }
     }
   };
 
   const clearStateHandler = () => {
-    setProgress(undefined);
-    setFilesUploaded(0);
+    setFilesProgress([]);
     setUploadError('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-      console.log(fileInputRef.current.files);
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
@@ -99,8 +93,7 @@ const UploadInput: React.FC<Props> = ({ onFileUpload }) => {
         onExited={clearStateHandler}
         files={files}
         onSubmit={uploadHandler}
-        progress={progress}
-        filesUploaded={filesUploaded}
+        filesProgress={filesProgress}
         error={uploadError}
       />
     </>

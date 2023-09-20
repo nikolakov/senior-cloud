@@ -1,10 +1,10 @@
 import { UserProfile } from './user';
 
 export type LoginResponse = {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   expiresIn: string;
   user: UserProfile;
-  // refreshToken: string;
 };
 
 export type EditableUserProfile = Partial<Omit<UserProfile, 'id'>>;

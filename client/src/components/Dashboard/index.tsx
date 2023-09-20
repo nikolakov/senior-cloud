@@ -1,24 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 
 import UploadInput from './UploadInput';
 import FilesTable from './FilesTable';
 import { FileFromApi } from 'types';
 import handleError from 'utils/handleError';
-import FilesService from 'services/FilesService';
+import FoldersService from 'services/FoldersService';
+import useAuth from 'hooks/useAuth';
 
 const Dashboard: React.FC = () => {
+  const { profileInfo } = useAuth();
+
   const [files, setFiles] = useState<FileFromApi[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchFiles = async () => {
+  const fetchFiles = useCallback(async () => {
     try {
-      const res = await FilesService.getFiles();
+      const res = await FoldersService.getFolderFiles(profileInfo.rootFolder.id);
       setFiles(res.data);
     } catch (e: any) {
       handleError(e);
     }
-  };
+  }, [profileInfo.rootFolder.id]);
 
   useEffect(() => {
     const initialFetch = async () => {
@@ -28,11 +31,11 @@ const Dashboard: React.FC = () => {
     };
 
     initialFetch();
-  }, []);
+  }, [fetchFiles]);
 
   return (
     <div style={{ paddingBottom: '2rem' }}>
-      <UploadInput onFileUpload={fetchFiles} />
+      <UploadInput onFileUpload={fetchFiles} folderId={profileInfo.rootFolder.id} />
       <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
         {loading ? (
           <Spinner animation="border" />

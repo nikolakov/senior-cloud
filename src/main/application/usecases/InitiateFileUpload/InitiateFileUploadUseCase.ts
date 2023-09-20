@@ -30,6 +30,7 @@ class InitiateFileUploadUseCase implements UseCase {
     file.name = iuReq.fileName;
     file.fileSize = iuReq.fileSize;
     file.owner = iuReq.owner;
+    file.folder = iuReq.folderId;
 
     return file;
   }

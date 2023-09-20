@@ -1,3 +1,5 @@
+import { FolderFromApi } from './folder';
+
 export type UserId = string;
 
 export enum Role {
@@ -13,4 +15,5 @@ export type UserProfile = {
   email: string;
   role: Role;
   managedBy?: UserId;
+  rootFolder: FolderFromApi;
 };

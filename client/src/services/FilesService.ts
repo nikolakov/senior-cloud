@@ -4,9 +4,14 @@ import ApiService from './ApiService';
 
 const endpoint = '/files';
 
+export type FileProgress = {
+  totalParts: number;
+  uploaded: number;
+};
+
 class FilesService {
-  static async uploadFile(file: File, onProgress: (fileProgress: number) => void) {
-    await new FileUploader(file, onProgress).uploadFile();
+  static async uploadFile(file: File, folderId: string, onProgress: (totalParts: number) => void) {
+    await new FileUploader(file, onProgress).uploadFile(folderId);
   }
 
   static getFiles() {
@@ -27,15 +32,16 @@ class FileUploader {
   private fileName: string;
   private fileType: string;
   private fileSize: number;
-  private onProgress: (fileProgress: number) => void;
+  private onProgress: (totalParts: number) => void;
 
   private urls: string[] = [];
   private partSize: number = 0;
   private uploadId: string = '';
   private fileId: string = '';
   private etags: string[] = [];
+  private totalParts: number = 1;
 
-  constructor(file: File, onProgress: (fileProgress: number) => void) {
+  constructor(file: File, onProgress: (totalParts: number) => void) {
     this.file = file;
     this.fileName = file.name;
     this.fileType = file.type;
@@ -44,16 +50,19 @@ class FileUploader {
     this.onProgress = onProgress;
   }
 
-  async uploadFile() {
-    await this.initiateUpload();
-    await this.uploadParts();
+  async uploadFile(folderId: string) {
+    await this.initiateUpload(folderId);
+    console.time('upload time');
+    await this.uploadPartsSync();
+    console.timeEnd('upload time');
     await this.finishUpload();
   }
 
-  private async initiateUpload() {
+  private async initiateUpload(folderId: string) {
     const res = await ApiService.post<InitiateUploadResponse>(`${endpoint}/initiateUpload`, {
       fileName: this.fileName,
       fileSize: this.fileSize,
+      folderId,
     });
 
     this.urls = res.data.urls;
@@ -62,13 +71,12 @@ class FileUploader {
     this.fileId = res.data.fileId;
   }
 
-  private async uploadParts() {
+  private async uploadPartsSync() {
     const axiosInstance = axios.create();
-    const totalParts = this.getTotalNumberOfParts();
+    this.totalParts = this.getTotalNumberOfParts();
 
-    for (let pIndex = 0; pIndex < totalParts; pIndex++) {
+    for (let pIndex = 0; pIndex < this.totalParts; pIndex++) {
       await this.uploadSinglePart(pIndex, axiosInstance);
-      this.updateExternalProgress(pIndex, totalParts);
     }
   }
 
@@ -80,6 +88,7 @@ class FileUploader {
     const part = await this.readPart(pIndex);
     const res = await axiosInstance.put(this.urls[pIndex], part);
 
+    this.updateExternalProgress();
     this.etags.push(res.headers.etag);
   }
 
@@ -101,8 +110,8 @@ class FileUploader {
     });
   }
 
-  private async updateExternalProgress(pIndex: number, totalParts: number) {
-    this.onProgress((pIndex + 1) / totalParts);
+  private async updateExternalProgress() {
+    this.onProgress(this.totalParts);
   }
 
   private finishUpload() {

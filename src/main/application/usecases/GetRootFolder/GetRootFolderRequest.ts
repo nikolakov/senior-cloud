@@ -1,7 +1,7 @@
 import Request from '../../../infrastructure/Request';
 
-type GetUserFilesRequest = Request & {
+type GetRootFolderRequest = Request & {
   ownerId: string;
 };
 
-export default GetUserFilesRequest;
+export default GetRootFolderRequest;

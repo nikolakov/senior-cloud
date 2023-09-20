@@ -1,10 +1,9 @@
-import File from '../../../domain/entities/File';
 import UseCase from '../../../infrastructure/UseCase';
 import Request from '../../../infrastructure/Request';
-import GetUserFilesRequest from './GetUserFilesRequest';
+import GetFolderFilesRequest from './GetFolderFilesRequest';
 import FileGateway from '../../../infrastructure/gateways/FileGateway/FileGateway';
 
-class GetUserFilesUseCase implements UseCase {
+class GetFolderFilesUseCase implements UseCase {
   private fileGateway: FileGateway;
 
   constructor(fileGateway: FileGateway) {
@@ -12,12 +11,12 @@ class GetUserFilesUseCase implements UseCase {
   }
 
   async execute(request: Request) {
-    const gufReq = <GetUserFilesRequest>request;
+    const gffReq = <GetFolderFilesRequest>request;
 
-    const files = await this.fileGateway.findAllByOwner(gufReq.ownerId);
+    const files = await this.fileGateway.findAllInFolder(gffReq.folderId);
 
     return files.map(file => file.toBoundaryDTO());
   }
 }
 
-export default GetUserFilesUseCase;
+export default GetFolderFilesUseCase;

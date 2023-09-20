@@ -2,7 +2,7 @@
 // also handles the storage of the JSON token in localStorage
 
 import axios from 'axios';
-// import createAuthRefreshInterceptor, { AxiosAuthRefreshRequestConfig } from 'axios-auth-refresh';
+import createAuthRefreshInterceptor, { AxiosAuthRefreshRequestConfig } from 'axios-auth-refresh';
 
 import { authConfig } from './axiosConfig';
 import axiosApiInstance from './ApiService';
@@ -11,11 +11,11 @@ import { EditableUserProfile, LoginResponse, UserProfile } from '../types';
 const axiosAuthInstance = axios.create(authConfig);
 
 const localStorageTokenKeys = {
-  mainToken: 'token',
-  // refreshToken: 'refreshToken',
+  accessToken: 'accessToken',
+  refreshToken: 'refreshToken',
 };
 
-// const refreshTokenURL = '/auth/refresh-token';
+const refreshTokenURL = '/refresh-token';
 
 const formatAuthorizationHeader = (token: string) => `Bearer ${token}`;
 
@@ -25,9 +25,9 @@ let authResponseInterceptors: number | null = null;
 const setAuthRequestInterceptors = () => {
   // console.log('[setAuthRequestInterceptors] setting auth interceptors...');
   authRequestInterceptors = axiosApiInstance.interceptors.request.use(config => {
-    const { mainToken } = AuthService.getAuthTokens();
-    if (mainToken) {
-      config.headers.Authorization = formatAuthorizationHeader(mainToken);
+    const { accessToken } = AuthService.getAuthTokens();
+    if (accessToken) {
+      config.headers.Authorization = formatAuthorizationHeader(accessToken);
     }
 
     return config;
@@ -36,41 +36,22 @@ const setAuthRequestInterceptors = () => {
 };
 
 const setAuthResponseInterceptors = (logout: () => void) => {
-  authResponseInterceptors = axiosApiInstance.interceptors.response.use(
-    response => response,
-    error => {
-      if (error.response?.status === 401) {
-        logout();
-        // Add your logic to
-        //  1. Redirect user to LOGIN
-        //  2. Reset authentication from localstorage/sessionstorage
-      }
+  // Instantiate the interceptor
+  authResponseInterceptors = createAuthRefreshInterceptor(axiosApiInstance, async error => {
+    const { refreshToken: oldRefreshToken } = AuthService.getAuthTokens();
+    try {
+      if (!oldRefreshToken) throw new Error();
 
-      return Promise.reject(error);
+      const res = await AuthService.refreshToken(oldRefreshToken);
+      const { accessToken, refreshToken } = res.data;
+      AuthService.setAuthTokens(accessToken, refreshToken);
+      error.response.config.headers['Authorization'] = formatAuthorizationHeader(accessToken);
+      return Promise.resolve();
+    } catch (e) {
+      logout();
+      return;
     }
-  );
-  //   // Instantiate the interceptor
-  //   createAuthRefreshInterceptor(axios, async error => {
-  //     console.log(error.config.url);
-  //     if (!error.config.url.includes(refreshTokenURL)) {
-  //       const { refreshToken: oldRefreshToken } = AuthService.getAuthTokens();
-  //       if (oldRefreshToken) {
-  //         try {
-  //           const res = await AuthService.refreshToken(oldRefreshToken);
-  //           const { mainToken, refreshToken } = res.data;
-  //           AuthService.setAuthTokens(mainToken, refreshToken);
-  //           error.response.config.headers['Authorization'] = formatAuthorizationHeader(mainToken);
-  //           return Promise.resolve();
-  //         } catch (e) {
-  //           logout();
-  //           return;
-  //         }
-  //       }
-  //     } else {
-  //       logout();
-  //       return;
-  //     }
-  //   });
+  });
 };
 
 const removeAuthRequestInterceptors = () => {
@@ -87,31 +68,25 @@ const removeAuthRequestInterceptors = () => {
 };
 
 const AuthService = {
-  // setAuthTokens: (mainToken: string, refreshToken: string) => {
-  //   // console.log('[setAuthTokens] setting auth tokens in localStorage...');
-  //   localStorage.setItem(localStorageTokenKeys.mainToken, mainToken);
-  //   localStorage.setItem(localStorageTokenKeys.refreshToken, refreshToken);
-  //   // console.log('[setAuthTokens] auth tokens set in localStorage');
-  // },
-
-  setAuthTokens: (mainToken: string) => {
+  setAuthTokens: (accessToken: string, refreshToken: string) => {
     // console.log('[setAuthTokens] setting auth tokens in localStorage...');
-    localStorage.setItem(localStorageTokenKeys.mainToken, mainToken);
+    localStorage.setItem(localStorageTokenKeys.accessToken, accessToken);
+    localStorage.setItem(localStorageTokenKeys.refreshToken, refreshToken);
     // console.log('[setAuthTokens] auth tokens set in localStorage');
   },
 
   getAuthTokens: () => {
     return {
-      mainToken: localStorage.getItem(localStorageTokenKeys.mainToken),
-      // refreshToken: localStorage.getItem(localStorageTokenKeys.refreshToken),
+      accessToken: localStorage.getItem(localStorageTokenKeys.accessToken),
+      refreshToken: localStorage.getItem(localStorageTokenKeys.refreshToken),
     };
   },
 
   clearAuthTokens: () => {
     // console.log('[clearAuthTokens] removing auth tokens from localStorage...');
 
-    localStorage.removeItem(localStorageTokenKeys.mainToken);
-    // localStorage.removeItem(localStorageTokenKeys.refreshToken);
+    localStorage.removeItem(localStorageTokenKeys.accessToken);
+    localStorage.removeItem(localStorageTokenKeys.refreshToken);
     // console.log('[clearAuthTokens] auth tokens removed from localStorage');
   },
 
@@ -122,7 +97,7 @@ const AuthService = {
       password,
     });
 
-    const { token } = loginResponse.data;
+    const { accessToken, refreshToken } = loginResponse.data;
     // console.log(
     //   '[login] auth tokens fetched: ' +
     //     token?.substring(0, 10) +
@@ -135,7 +110,7 @@ const AuthService = {
     // refreshToken?.substring(refreshToken.length - 10)
     // );
 
-    AuthService.setAuthTokens(token);
+    AuthService.setAuthTokens(accessToken, refreshToken);
 
     return loginResponse.data;
   },
@@ -148,17 +123,17 @@ const AuthService = {
       recaptchaToken,
     });
 
-    const { token } = registerResponse.data;
-    AuthService.setAuthTokens(token);
+    const { accessToken, refreshToken } = registerResponse.data;
+    AuthService.setAuthTokens(accessToken, refreshToken);
 
     return registerResponse.data;
   },
 
   authenticate: (logout: () => void) => {
     // console.log('[authenticate] authenticating...');
-    const { mainToken } = AuthService.getAuthTokens();
+    const { accessToken } = AuthService.getAuthTokens();
 
-    if (mainToken) {
+    if (accessToken) {
       // console.log(
       //   '[authenticate] auth token found in localStorage: ' +
       //     mainToken?.substring(0, 10) +
@@ -171,17 +146,17 @@ const AuthService = {
       // console.log('[authenticate] auth token NOT found in localStorage');
     }
 
-    return mainToken;
+    return accessToken;
   },
 
-  // refreshToken: (refreshToken: string) =>
-  //   ApiService.post<{ mainToken: string; refreshToken: string }>(
-  //     refreshTokenURL,
-  //     { refreshToken },
-  //     {
-  //       skipAuthRefresh: true,
-  //     } as AxiosAuthRefreshRequestConfig
-  //   ),
+  refreshToken: (refreshToken: string) =>
+    axiosAuthInstance.post<{ accessToken: string; refreshToken: string }>(
+      refreshTokenURL,
+      { refreshToken },
+      {
+        skipAuthRefresh: true,
+      } as AxiosAuthRefreshRequestConfig
+    ),
 
   getProfileInfo: () => axiosApiInstance.get<UserProfile>('/profileInfo'),
 

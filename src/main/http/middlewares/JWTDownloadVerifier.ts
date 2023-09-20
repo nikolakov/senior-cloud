@@ -16,7 +16,7 @@ const JWTDownloadVerifier: RequestHandler<any, ErrorResponseDTO, {}, { token: st
     if (!token) {
       return res.status(400).json({ error: 'token_not_found' });
     }
-    utils.verifyJWT(token);
+    utils.verifyJWT(token, 'accessTokenPublicKey');
   } catch (err) {
     return res.status(403).json({ error: 'token_expired_or_invalid' });
   }
