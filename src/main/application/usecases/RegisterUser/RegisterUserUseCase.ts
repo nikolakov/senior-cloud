@@ -1,4 +1,4 @@
-import User, { Role, UserBoundaryDTO } from '../../../domain/entities/User';
+import User, { UserBoundaryDTO } from '../../../domain/entities/User';
 import Folder from '../../../domain/entities/Folder';
 import UserGateway from '../../../infrastructure/gateways/UserGateway/UserGateway';
 import FolderGateway from '../../../infrastructure/gateways/FolderGateway/FolderGateway';

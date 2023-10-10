@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import path from 'path';
 
 import routes from './routes';
-import { isAddressInfo } from '../../types/custom';
+import { isAddressInfo } from './types/custom';
 
 class Server {
   private app: Express;

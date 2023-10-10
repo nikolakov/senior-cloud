@@ -17,11 +17,23 @@ class DeleteFileUseCase implements UseCase {
   async execute(request: Request) {
     const dReq = <DeleteFileRequest>request;
 
-    await this.fileGateway.delete(dReq.fileId);
+    try {
+      const file = await this.fileGateway.findById(dReq.fileId);
+      if (!this.hasPermission(file as File, dReq.userId)) return;
+    } catch (e) {
+      return;
+    }
 
     try {
+      await this.fileGateway.delete(dReq.fileId);
       await this.fileStorage.deleteFile(dReq.fileId);
-    } catch (e) {}
+    } catch (e) {
+      return;
+    }
+  }
+
+  private hasPermission(file: File, userId: string) {
+    return file.owner === userId;
   }
 }
 

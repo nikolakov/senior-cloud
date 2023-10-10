@@ -1,4 +1,4 @@
-import User, { Role, UserBoundaryDTO } from '../../../domain/entities/User';
+import User, { UserBoundaryDTO } from '../../../domain/entities/User';
 import UserGateway from '../../../infrastructure/gateways/UserGateway/UserGateway';
 import UseCase from '../../../infrastructure/UseCase';
 import Request from '../../../infrastructure/Request';

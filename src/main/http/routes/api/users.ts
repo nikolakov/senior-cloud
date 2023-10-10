@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import passport from 'passport';
 
-import { UpdateUserRequestDTO } from 'types/user';
+import { UpdateUserRequestDTO } from '../../types/user';
 
 import MongooseUserGateway from '../../../infrastructure/gateways/UserGateway/MongooseUserGateway';
 import UpdateUserUseCase from '../../../application/usecases/UpdateUser/UpdateUserUseCase';

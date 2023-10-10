@@ -2,7 +2,7 @@ import { Router } from 'express';
 import axios from 'axios';
 
 import * as utils from '../../../lib/utils';
-import { LoginRequestDTO, RegisterRequestDTO } from 'types/auth';
+import { LoginRequestDTO, RegisterRequestDTO } from '../types/auth';
 
 import MongooseUserGateway from '../../infrastructure/gateways/UserGateway/MongooseUserGateway';
 import MongooseFolderGateway from '../../infrastructure/gateways/FolderGateway/MongooseFolderGateway';
