@@ -8,6 +8,7 @@ import MongooseUserGateway from '../../infrastructure/gateways/UserGateway/Mongo
 import MongooseFolderGateway from '../../infrastructure/gateways/FolderGateway/MongooseFolderGateway';
 import RegisterUserUseCase from '../../application/usecases/RegisterUser/RegisterUserUseCase';
 import LoginUserUseCase from '../../application/usecases/LoginUser/LoginUserUseCase';
+import GetRootFolderUseCase from '../../application/usecases/GetRootFolder/GetRootFolderUseCase';
 
 const userGateway = new MongooseUserGateway();
 const folderGateway = new MongooseFolderGateway();
@@ -48,7 +49,11 @@ router.post<{}, any, LoginRequestDTO>('/login', async (req, res, next) => {
 
     const { accessToken, refreshToken, expiresIn } = getTokenPair(user.id);
 
-    res.json({ user, accessToken, refreshToken, expiresIn });
+    const rootFolder = await new GetRootFolderUseCase(folderGateway).execute({
+      ownerId: user.id,
+    });
+
+    res.json({ user: { ...user, rootFolder }, accessToken, refreshToken, expiresIn });
   } catch (e: any) {
     res.status(401).send({ error: e.message });
   }
@@ -70,7 +75,11 @@ router.post<{}, any, RegisterRequestDTO>('/register', async (req, res, next) => 
 
     const { accessToken, refreshToken, expiresIn } = getTokenPair(user.id);
 
-    res.json({ user, accessToken, refreshToken, expiresIn });
+    const rootFolder = await new GetRootFolderUseCase(folderGateway).execute({
+      ownerId: user.id,
+    });
+
+    res.json({ user: { ...user, rootFolder }, accessToken, refreshToken, expiresIn });
   } catch (e: any) {
     res.status(409).send({ error: e.message });
   }
