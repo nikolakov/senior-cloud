@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import axios from 'axios';
 
-import * as utils from '../../../lib/utils';
 import { LoginRequestDTO, RegisterRequestDTO } from '../types/auth';
 
 import MongooseUserGateway from '../../infrastructure/gateways/UserGateway/MongooseUserGateway';
@@ -10,8 +9,7 @@ import MongooseTokenFamilyGateway from '../../infrastructure/gateways/TokenFamil
 import RegisterUserUseCase from '../../application/usecases/RegisterUser/RegisterUserUseCase';
 import LoginUserUseCase from '../../application/usecases/LoginUser/LoginUserUseCase';
 import GetRootFolderUseCase from '../../application/usecases/GetRootFolder/GetRootFolderUseCase';
-import AccessTokenIssuer from '../authentication/AccessTokenIssuer';
-import RefreshTokenIssuer from '../authentication/RefreshTokenIssuer';
+import JWTAuthenticationManager from '../authentication/JWTAuthenticationManager';
 
 const userGateway = new MongooseUserGateway();
 const folderGateway = new MongooseFolderGateway();
@@ -29,13 +27,6 @@ const validateCaptcha = async (token: string) => {
   }
 };
 
-const getTokenPair = async (userId: string) => {
-  const accessToken = new AccessTokenIssuer().issueAccessToken(userId);
-  const refreshToken = await new RefreshTokenIssuer(tokenFamilyGateway).issueInitialRefreshToken(
-    userId
-  );
-};
-
 const router = Router();
 
 router.post<{}, any, LoginRequestDTO>('/login', async (req, res, next) => {
@@ -43,10 +34,9 @@ router.post<{}, any, LoginRequestDTO>('/login', async (req, res, next) => {
     const { username, password } = req.body;
     const user = await new LoginUserUseCase(userGateway).execute({ username, password });
 
-    const accessToken = new AccessTokenIssuer().issueAccessToken(user.id);
-    const refreshToken = await new RefreshTokenIssuer(tokenFamilyGateway).issueInitialRefreshToken(
-      user.id
-    );
+    const { accessToken, refreshToken } = await new JWTAuthenticationManager(
+      tokenFamilyGateway
+    ).issueTokens(user.id);
 
     const rootFolder = await new GetRootFolderUseCase(folderGateway).execute({
       ownerId: user.id,
@@ -72,10 +62,9 @@ router.post<{}, any, RegisterRequestDTO>('/register', async (req, res, next) => 
       password,
     });
 
-    const accessToken = new AccessTokenIssuer().issueAccessToken(user.id);
-    const refreshToken = await new RefreshTokenIssuer(tokenFamilyGateway).issueInitialRefreshToken(
-      user.id
-    );
+    const { accessToken, refreshToken } = await new JWTAuthenticationManager(
+      tokenFamilyGateway
+    ).issueTokens(user.id);
 
     const rootFolder = await new GetRootFolderUseCase(folderGateway).execute({
       ownerId: user.id,
@@ -88,25 +77,12 @@ router.post<{}, any, RegisterRequestDTO>('/register', async (req, res, next) => 
 });
 
 router.post<{}, any, { refreshToken: string }>('/refresh-token', async (req, res, next) => {
-  const oldRefreshToken = req.body.refreshToken;
-
-  let decoded;
   try {
-    decoded = utils.verifyJWT(oldRefreshToken, 'refreshTokenPublicKey');
+    const oldRefreshToken = req.body.refreshToken;
 
-    if (
-      !decoded ||
-      typeof decoded === 'string' ||
-      !decoded.sub ||
-      !decoded.familyId ||
-      !decoded.index
-    )
-      throw new Error();
-
-    const accessToken = new AccessTokenIssuer().issueAccessToken(decoded.sub);
-    const refreshToken = await new RefreshTokenIssuer(
+    const { accessToken, refreshToken } = await new JWTAuthenticationManager(
       tokenFamilyGateway
-    ).issueSubsequentRefreshToken(decoded.familyId, decoded.sub, decoded.index);
+    ).refreshTokens(oldRefreshToken);
 
     return res.send({ accessToken, refreshToken });
   } catch (e) {

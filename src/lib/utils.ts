@@ -73,6 +73,3 @@ export const genPassword = (password: string) => {
     });
   });
 };
-
-export const verifyJWT = (token: string, key: 'accessTokenPublicKey' | 'refreshTokenPublicKey') =>
-  jsonwebtoken.verify(token, config[key]);
