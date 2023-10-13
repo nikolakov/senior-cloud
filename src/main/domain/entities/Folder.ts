@@ -16,7 +16,7 @@ export type FolderGatewayDTO = {
   updatedAt: Date;
 };
 
-type FolderToGatewayDTO = Omit<FolderGatewayDTO, 'id'>;
+type FolderToGatewayDTO = Omit<FolderGatewayDTO, 'id' | 'createdAt' | 'updatedAt'>;
 
 class Folder {
   id: string;
@@ -49,8 +49,6 @@ class Folder {
       name: this.name,
       owner: this.owner,
       parentFolder: this.parentFolder,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
     };
   }
 

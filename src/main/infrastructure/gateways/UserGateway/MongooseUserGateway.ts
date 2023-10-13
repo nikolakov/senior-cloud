@@ -28,7 +28,6 @@ const UserSchema = new Schema(
     deletedAt: Date,
     role: {
       type: String,
-      default: Role.User,
       enum: Object.values(Role),
     },
   },
@@ -46,7 +45,7 @@ UserSchema.virtual('gatewayDTO').get(function (): UserGatewayDTO {
     salt: this.salt as string,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
-    role: this.role,
+    role: this.role as Role,
   };
 });
 
@@ -63,52 +62,43 @@ const UserModel = model<MongooseUser>('User', UserSchema);
 class MongooseUserGateway implements UserGateway {
   async create(user: User): Promise<User> {
     const dto = user.toGatewayDTO();
-
-    const created = await new UserModel({
-      username: dto.username,
-      email: dto.email,
-      hash: dto.hash,
-      salt: dto.salt,
-    }).save();
-
-    return this.convertFromMongooseDocToUser(created);
+    const created = await new UserModel(dto).save();
+    return this.convertFromMongooseDocToEntity(created);
   }
 
   async findAll(): Promise<User[]> {
-    const userDocs = await UserModel.find();
-    return userDocs.map(userDoc => this.convertFromMongooseDocToUser(userDoc));
+    const docs = await UserModel.find();
+    return docs.map(doc => this.convertFromMongooseDocToEntity(doc));
   }
 
   async findById(id: string): Promise<User | undefined> {
-    const userDoc = await UserModel.findById(id);
-    return userDoc ? this.convertFromMongooseDocToUser(userDoc) : undefined;
+    const doc = await UserModel.findById(id);
+    return doc ? this.convertFromMongooseDocToEntity(doc) : undefined;
   }
 
   async update(user: User): Promise<User> {
-    const updatedUserDTO = user.toGatewayDTO();
-
-    const userDoc = await UserModel.findOneAndUpdate({ _id: user.id }, updatedUserDTO, {
+    const dto = user.toGatewayDTO();
+    const doc = await UserModel.findOneAndUpdate({ _id: user.id }, dto, {
       new: true,
     });
 
-    if (!userDoc) throw new Error('user_not_found');
-    return this.convertFromMongooseDocToUser(userDoc);
+    if (!doc) throw new Error('user_not_found');
+    return this.convertFromMongooseDocToEntity(doc);
   }
 
   async delete(id: string): Promise<boolean> {
-    const userDoc = await UserModel.findOneAndUpdate({ _id: id }, { deletedAt: new Date() });
-
-    return userDoc ? true : false;
+    const doc = await UserModel.findOneAndUpdate({ _id: id }, { deletedAt: new Date() });
+    return doc ? true : false;
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
-    const userDoc = await UserModel.findOne({ email });
-    return userDoc ? this.convertFromMongooseDocToUser(userDoc) : undefined;
+    const doc = await UserModel.findOne({ email });
+    return doc ? this.convertFromMongooseDocToEntity(doc) : undefined;
   }
 
   async findByUsername(username: string): Promise<User | undefined> {
-    const userDoc = await UserModel.findOne({ username });
-    return userDoc ? this.convertFromMongooseDocToUser(userDoc) : undefined;
+    const doc = await UserModel.findOne({ username });
+    return doc ? this.convertFromMongooseDocToEntity(doc) : undefined;
   }
 
   async findConflict(id: string, field: string, value: string): Promise<Boolean> {
@@ -120,12 +110,12 @@ class MongooseUserGateway implements UserGateway {
     return !!conflictDoc;
   }
 
-  private convertFromMongooseDocToUser(
+  private convertFromMongooseDocToEntity(
     document: Document<unknown, any, MongooseUser> & MongooseUser & { _id: Types.ObjectId }
   ): User {
-    const user = new User();
-    user.fromGatewayDTO(document.gatewayDTO);
-    return user;
+    const entity = new User();
+    entity.fromGatewayDTO(document.gatewayDTO);
+    return entity;
   }
 }
 

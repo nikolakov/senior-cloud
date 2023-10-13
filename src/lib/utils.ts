@@ -74,30 +74,5 @@ export const genPassword = (password: string) => {
   });
 };
 
-/**
- * @param userId - Used to set the JWT `sub` payload property to the user ID
- * @param expiresIn - `Optional` The expiration period of the token in string format, e.g. 2s, 4h or 1d. Defaults to 1d
- */
-export const issueJWT = (
-  userId: string,
-  key: 'accessTokenPrivateKey' | 'refreshTokenPrivateKey',
-  expiresIn: string = '1d'
-) => {
-  const payload = {
-    sub: userId,
-    iat: Math.floor(Date.now() / 1000),
-  };
-
-  const signedToken = jsonwebtoken.sign(payload, config[key], {
-    expiresIn: expiresIn,
-    algorithm: 'RS256',
-  });
-
-  return {
-    token: signedToken,
-    expiresIn: expiresIn,
-  };
-};
-
 export const verifyJWT = (token: string, key: 'accessTokenPublicKey' | 'refreshTokenPublicKey') =>
   jsonwebtoken.verify(token, config[key]);

@@ -29,7 +29,7 @@ export type UserGatewayDTO = {
   role: Role;
 };
 
-type UserToGatewayDTO = Omit<UserGatewayDTO, 'id'>;
+type UserToGatewayDTO = Omit<UserGatewayDTO, 'id' | 'createdAt' | 'updatedAt'>;
 
 class User {
   id: string;
@@ -120,8 +120,6 @@ class User {
       lastName: this.lastName,
       hash: this.hash,
       salt: this.salt,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
       role: this.role,
     };
   }

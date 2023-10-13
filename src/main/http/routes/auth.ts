@@ -6,12 +6,16 @@ import { LoginRequestDTO, RegisterRequestDTO } from '../types/auth';
 
 import MongooseUserGateway from '../../infrastructure/gateways/UserGateway/MongooseUserGateway';
 import MongooseFolderGateway from '../../infrastructure/gateways/FolderGateway/MongooseFolderGateway';
+import MongooseTokenFamilyGateway from '../../infrastructure/gateways/TokenFamilyGateway/MongooseTokenFamilyGateway';
 import RegisterUserUseCase from '../../application/usecases/RegisterUser/RegisterUserUseCase';
 import LoginUserUseCase from '../../application/usecases/LoginUser/LoginUserUseCase';
 import GetRootFolderUseCase from '../../application/usecases/GetRootFolder/GetRootFolderUseCase';
+import AccessTokenIssuer from '../authentication/AccessTokenIssuer';
+import RefreshTokenIssuer from '../authentication/RefreshTokenIssuer';
 
 const userGateway = new MongooseUserGateway();
 const folderGateway = new MongooseFolderGateway();
+const tokenFamilyGateway = new MongooseTokenFamilyGateway();
 
 const validateCaptcha = async (token: string) => {
   try {
@@ -25,19 +29,11 @@ const validateCaptcha = async (token: string) => {
   }
 };
 
-const getTokenPair = (userId: string) => {
-  const { token: accessToken, expiresIn } = utils.issueJWT(
-    userId,
-    'accessTokenPrivateKey',
-    process.env.ACCESS_TOKEN_EXP
+const getTokenPair = async (userId: string) => {
+  const accessToken = new AccessTokenIssuer().issueAccessToken(userId);
+  const refreshToken = await new RefreshTokenIssuer(tokenFamilyGateway).issueInitialRefreshToken(
+    userId
   );
-  const { token: refreshToken } = utils.issueJWT(
-    userId,
-    'refreshTokenPrivateKey',
-    process.env.REFRESH_TOKEN_EXP
-  );
-
-  return { accessToken, refreshToken, expiresIn };
 };
 
 const router = Router();
@@ -47,13 +43,16 @@ router.post<{}, any, LoginRequestDTO>('/login', async (req, res, next) => {
     const { username, password } = req.body;
     const user = await new LoginUserUseCase(userGateway).execute({ username, password });
 
-    const { accessToken, refreshToken, expiresIn } = getTokenPair(user.id);
+    const accessToken = new AccessTokenIssuer().issueAccessToken(user.id);
+    const refreshToken = await new RefreshTokenIssuer(tokenFamilyGateway).issueInitialRefreshToken(
+      user.id
+    );
 
     const rootFolder = await new GetRootFolderUseCase(folderGateway).execute({
       ownerId: user.id,
     });
 
-    res.json({ user: { ...user, rootFolder }, accessToken, refreshToken, expiresIn });
+    res.json({ user: { ...user, rootFolder }, accessToken, refreshToken });
   } catch (e: any) {
     res.status(401).send({ error: e.message });
   }
@@ -73,13 +72,16 @@ router.post<{}, any, RegisterRequestDTO>('/register', async (req, res, next) => 
       password,
     });
 
-    const { accessToken, refreshToken, expiresIn } = getTokenPair(user.id);
+    const accessToken = new AccessTokenIssuer().issueAccessToken(user.id);
+    const refreshToken = await new RefreshTokenIssuer(tokenFamilyGateway).issueInitialRefreshToken(
+      user.id
+    );
 
     const rootFolder = await new GetRootFolderUseCase(folderGateway).execute({
       ownerId: user.id,
     });
 
-    res.json({ user: { ...user, rootFolder }, accessToken, refreshToken, expiresIn });
+    res.json({ user: { ...user, rootFolder }, accessToken, refreshToken });
   } catch (e: any) {
     res.status(409).send({ error: e.message });
   }
@@ -91,23 +93,25 @@ router.post<{}, any, { refreshToken: string }>('/refresh-token', async (req, res
   let decoded;
   try {
     decoded = utils.verifyJWT(oldRefreshToken, 'refreshTokenPublicKey');
+
+    if (
+      !decoded ||
+      typeof decoded === 'string' ||
+      !decoded.sub ||
+      !decoded.familyId ||
+      !decoded.index
+    )
+      throw new Error();
+
+    const accessToken = new AccessTokenIssuer().issueAccessToken(decoded.sub);
+    const refreshToken = await new RefreshTokenIssuer(
+      tokenFamilyGateway
+    ).issueSubsequentRefreshToken(decoded.familyId, decoded.sub, decoded.index);
+
+    return res.send({ accessToken, refreshToken });
   } catch (e) {
     return res.status(401).send();
   }
-
-  if (!decoded || typeof decoded === 'string' || !decoded.sub) {
-    return res.status(401).send();
-  }
-
-  const user = await userGateway.findById(decoded.sub);
-
-  if (!user) {
-    return res.status(401).send();
-  }
-
-  const { accessToken, refreshToken } = getTokenPair(user.id);
-
-  return res.send({ accessToken, refreshToken });
 });
 
 export default router;
